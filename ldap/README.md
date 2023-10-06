@@ -1,6 +1,6 @@
-# Delphix CC Scripts
+# Delphix CC LDAP Scripts
 
-### Assorted scripts to configure Delphix CC LDAP
+### Assorted scripts to configure Delphix CC LDAP parameters
 ```sh
 # dpxcc_config_ldap.sh
 # Created: Horacio Dos - 10/2023
