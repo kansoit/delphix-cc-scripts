@@ -1,11 +1,42 @@
 #!/bin/bash
 
-URL_BASE='http://192.168.1.100/masking/api/v5.1.22'
-USERNAME='Admin'
-PASSWORD='Admin-12'
 
+MASKING_ENGINE=''
+MASKING_USERNAME=''
+MASKING_PASSWORD=''
+URL_BASE='http://${MASKING_ENGINE}/masking/api/v5.1.22'
+LDAP_SERVER=''
+LDAP_PORT='389'
+LDAP_BASEDN='DC=candy,DC=com,DC=ar'
+LDAP_FILTER='(&(objectClass=person)(sAMAccountName=?))'
+LDAP_DOMAIN='CANDY'
+LDAP_TLS='false'
+LDAP_ENABLED='false'
+NOASK='no'
+NOROLLBACK='no'
 KEEPALIVE=600
 declare -a messages
+
+show_help() {
+    echo "Usage: dpcc_config_ldap.sh [options]"
+    echo "Options:"
+    echo "  --ldap-host       -s 	LDAP Server Address - Required value"
+    echo "  --ldap-port       -t	LDAP Port Number - Default: 389"
+    echo "  --ldap-basedn     -b	BaseDN - Default: DC=candy,DC=com,DC=ar"
+    echo "  --ldap-domain     -d	NETBIOS Domain Name - Default: CANDY"
+    echo "  --ldap-tls        -l	Enable LDAP TLS (true/false) - Default: false"
+    echo "  --ldap-filter     -f	LDAP Filter - Default: (&(objectClass=person)(sAMAccountName=?)) "
+    echo "  --ldap-enabled    -e	Enable LDAP (true/false) - Default: false"
+    echo "  --masking-engine  -m	Masking Engine Address - Required value"
+    echo "  --masking-user    -u	Masking Engine User Name - Required value"
+    echo "  --masking-pwd     -p	Password - Required value"
+    echo "  --no-ask          -a	No Ask dialog - Default: no"
+    echo "  --no-rollback     -r	No Rollback dialog - Default: no"
+    echo "  --help            -h	Show this help"
+    echo "Example:"
+    echo "dpxcc_config_ldap.sh -s <LDAP IP> -b 'DC=candy,DC=com,DC=ar' -d 'CANDY' -e 'true' -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    exit 1
+}
 
 # Print the message and exit the program.
 die() {
@@ -15,10 +46,55 @@ die() {
     exit 1
 }
 
-# Check if $1 is equal to 0. If so print out message specified in $2 and exit.
-check_empty() {
-    if [ -z "$1" ]; then
-        print_msg "$2"
+add_parm() {
+    parms+=("$1")
+    allparms=$(printf "%s" "${parms[@]}")
+}
+
+check_parm() {
+    local PARM="$1"
+
+    local KEY="u"
+    if [[ ! "$PARM" == *"$KEY"* ]]; then
+        echo "Option -u is missing. Masking Engine User Name is required."
+        exit 1
+    fi
+
+    local KEY="p"
+    if [[ ! "$PARM" == *"$KEY"* ]]; then
+        echo "Option -p is missing. Masking Engine Password is required."
+        exit 1
+    fi
+
+    local KEY="s"
+    if [[ ! "$PARM" == *"$KEY"* ]]; then
+        echo "Option -s is missing. LDAP Server IP Address is required."
+        exit 1
+    fi
+
+    local KEY="m"
+    if [[ ! "$PARM" == *"$KEY"* ]]; then
+        echo "Option -m is missing. Masking Engine IP Address is required."
+        exit 1
+    fi
+}
+
+check_packages() {
+	# Check Required Packages
+	local JQ="$(which jq)"
+	local CURL="$(which curl)"
+	local DIALOG="$(which dialog)"
+
+	[ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
+	[ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
+	[ -x "${DIALOG}" ] || { echo "dialog not found. Please install 'dialog' package and try again." ; exit 1 ; }
+}
+
+# Check if $1 not empty. If so print out message specified in $2 and exit.
+check_response() {
+    local RESPONSE="$1"
+    if [ -z "$RESPONSE" ]; then
+    	echo "No data!"
         exit 1
     fi
 }
@@ -35,7 +111,7 @@ check_error() {
     fi
 }
 
-print_msg() {
+msg_box() {
     messages+=("$1")
     message_text=$(printf "%s\n" "${messages[@]}")
 }
@@ -45,15 +121,15 @@ dpxlogin() {
     local FUNC='dpxlogin'
     local API='login'
     local DATA='{
-      "username": "'"$USERNAME"'",
-      "password": "'"$PASSWORD"'"
+      "username": "'"$MASKING_USERNAME"'",
+      "password": "'"$MASKING_PASSWORD"'"
     }'
     LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
 ) || die "Login failed with exit code $?"
     check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
-    print_msg "$USERNAME logged in successfully"
+    msg_box "$MASKING_USERNAME logged in successfully"
 }
 
 # Logout
@@ -61,18 +137,7 @@ dpxlogout() {
     local FUNC='dpxlogout'
     local API='logout'
     LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
-    print_msg "$USERNAME Logged out successfully"
-}
-
-# Get LDAP Status (true/false)
-get_ldap_status() {
-    local FUNC='get_ldap_status'
-    local API='application-settings/30'
-    LDAP_STATUS_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$LDAP_STATUS_RESPONSE"
-    LDAP_STATUS_VALUE=$(echo $LDAP_STATUS_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_STATUS_VALUE "No data!"
-    print_msg "LDAP status=$LDAP_STATUS_VALUE"
+    msg_box "$MASKING_USERNAME Logged out successfully"
 }
 
 # Get LDAP Server Name
@@ -82,8 +147,8 @@ get_ldap_server() {
     LDAP_SERVER_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_SERVER_RESPONSE"
     LDAP_SERVER_VALUE=$(echo $LDAP_SERVER_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_SERVER_VALUE "No data!"
-    print_msg "LDAP server=$LDAP_SERVER_VALUE"
+    check_response "$LDAP_SERVER_VALUE"
+    msg_box "LDAP server=$LDAP_SERVER_VALUE"
 }
 
 # Get LDAP Port Number (389/686=SSL)
@@ -93,8 +158,8 @@ get_ldap_port() {
     LDAP_PORT_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_PORT_RESPONSE"
     LDAP_PORT_VALUE=$(echo $LDAP_PORT_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_PORT_VALUE "No data!"
-    print_msg "LDAP port=$LDAP_PORT_VALUE"
+    check_response "$LDAP_PORT_VALUE"
+    msg_box "LDAP port=$LDAP_PORT_VALUE"
 }
 
 # Get LDAP BaseDN
@@ -104,8 +169,8 @@ get_ldap_baseDN() {
     LDAP_BASEDN_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_BASEDN_RESPONSE"
     LDAP_BASEDN_VALUE=$(echo $LDAP_BASEDN_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_BASEDN_VALUE "No data!"
-    print_msg "LDAP baseDN=$LDAP_BASEDN_VALUE"
+    check_response "$LDAP_BASEDN_VALUE"
+    msg_box "LDAP baseDN=$LDAP_BASEDN_VALUE"
 }
 
 # Get LDAP Filter
@@ -115,8 +180,8 @@ get_ldap_filter() {
     LDAP_FILTER_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_FILTER_RESPONSE"
     LDAP_FILTER_VALUE=$(echo $LDAP_FILTER_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_FILTER_VALUE "No data!"
-    print_msg "LDAP filter=$LDAP_FILTER_VALUE"
+    check_response "$LDAP_FILTER_VALUE"
+    msg_box "LDAP filter=$LDAP_FILTER_VALUE"
 }
 
 # Get LDAP Domain
@@ -126,8 +191,8 @@ get_ldap_domain() {
     LDAP_DOMAIN_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_DOMAIN_RESPONSE"
     LDAP_DOMAIN_VALUE=$(echo $LDAP_DOMAIN_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_DOMAIN_VALUE "No data!"
-    print_msg "LDAP domain=$LDAP_DOMAIN_VALUE"
+    check_response "$LDAP_DOMAIN_VALUE"
+    msg_box "LDAP domain=$LDAP_DOMAIN_VALUE"
 }
 
 # Get LDAP TLS (true/false)
@@ -137,19 +202,19 @@ get_ldap_tls() {
     LDAP_TLS_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_TLS_RESPONSE"
     LDAP_TLS_VALUE=$(echo $LDAP_TLS_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_TLS_VALUE "No data!"
-    print_msg "LDAP tls=$LDAP_TLS_VALUE"
+    check_response "$LDAP_TLS_VALUE"
+    msg_box "LDAP tls=$LDAP_TLS_VALUE"
 }
 
-set_ldap_status() {
-    local FUNC='set_ldap_status'
+# Get LDAP Status (true/false)
+get_ldap_status() {
+    local FUNC='get_ldap_status'
     local API='application-settings/30'
-    local DATA="$1"
-    LDAP_STATUS_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    LDAP_STATUS_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_STATUS_RESPONSE"
     LDAP_STATUS_VALUE=$(echo $LDAP_STATUS_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_STATUS_VALUE "No data!"
-    print_msg "LDAP status=$LDAP_STATUS_VALUE"
+    check_response "$LDAP_STATUS_VALUE"
+    msg_box "LDAP status=$LDAP_STATUS_VALUE"
 }
 
 set_ldap_server() {
@@ -159,8 +224,8 @@ set_ldap_server() {
     LDAP_SERVER_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_SERVER_RESPONSE"
     LDAP_SERVER_VALUE=$(echo $LDAP_SERVER_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_SERVER_VALUE "No data!"
-    print_msg "LDAP server=$LDAP_SERVER_VALUE"
+    check_response "$LDAP_SERVER_VALUE"
+    msg_box "LDAP server=$LDAP_SERVER_VALUE"
 }
 
 set_ldap_port() {
@@ -170,8 +235,8 @@ set_ldap_port() {
     LDAP_PORT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_PORT_RESPONSE"
     LDAP_PORT_VALUE=$(echo $LDAP_PORT_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_PORT_VALUE "No data!"
-    print_msg "LDAP port=$LDAP_PORT_VALUE"
+    check_response "$LDAP_PORT_VALUE"
+    msg_box "LDAP port=$LDAP_PORT_VALUE"
 }
 
 set_ldap_baseDN() {
@@ -181,8 +246,8 @@ set_ldap_baseDN() {
     LDAP_BASEDN_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_BASEDN_RESPONSE"
     LDAP_BASEDN_VALUE=$(echo $LDAP_BASEDN_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_BASEDN_VALUE "No data!"
-    print_msg "LDAP baseDN=$LDAP_BASEDN_VALUE"
+    check_response "$LDAP_BASEDN_VALUE"
+    msg_box "LDAP baseDN=$LDAP_BASEDN_VALUE"
 }
 
 set_ldap_filter() {
@@ -192,8 +257,8 @@ set_ldap_filter() {
     LDAP_FILTER_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_FILTER_RESPONSE"
     LDAP_FILTER_VALUE=$(echo $LDAP_FILTER_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_FILTER_VALUE "No data!"
-    print_msg "LDAP filter=$LDAP_FILTER_VALUE"
+    check_response "$LDAP_FILTER_VALUE"
+    msg_box "LDAP filter=$LDAP_FILTER_VALUE"
 }
 
 set_ldap_domain() {
@@ -203,8 +268,8 @@ set_ldap_domain() {
     LDAP_DOMAIN_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_DOMAIN_RESPONSE"
     LDAP_DOMAIN_VALUE=$(echo $LDAP_DOMAIN_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_DOMAIN_VALUE "No data!"
-    print_msg "LDAP domain=$LDAP_DOMAIN_VALUE"
+    check_response "$LDAP_DOMAIN_VALUE"
+    msg_box "LDAP domain=$LDAP_DOMAIN_VALUE"
 }
 
 set_ldap_tls() {
@@ -214,71 +279,174 @@ set_ldap_tls() {
     LDAP_TLS_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$LDAP_TLS_RESPONSE"
     LDAP_TLS_VALUE=$(echo $LDAP_TLS_RESPONSE | jq -r '.settingValue')
-    check_empty $LDAP_TLS_VALUE "No data!"
-    print_msg "LDAP tls=$LDAP_TLS_VALUE"
+    check_response "$LDAP_TLS_VALUE"
+    msg_box "LDAP tls=$LDAP_TLS_VALUE"
 }
 
-JQ="$(which jq)"
-CURL="$(which curl)"
-DIALOG="$(which dialog)"
+set_ldap_status() {
+    local FUNC='set_ldap_status'
+    local API='application-settings/30'
+    local DATA="$1"
+    LDAP_STATUS_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    check_error "$FUNC" "$API" "$LDAP_STATUS_RESPONSE"
+    LDAP_STATUS_VALUE=$(echo $LDAP_STATUS_RESPONSE | jq -r '.settingValue')
+    check_response "$LDAP_STATUS_VALUE"
+    msg_box "LDAP status=$LDAP_STATUS_VALUE"
+}
 
-test -z "$JQ" && echo "jq binary not found" && exit
-test -z "$CURL" && echo "curl binary not found" && exit
-test -z "$DIALOG" && echo "dialog binary not found" && exit
+check_packages
+
+# Parameters
+[ "$1" ] || { show_help; }
+
+args=""
+for arg
+do
+    delim=""
+    case "$arg" in
+        --ldap-host)
+            args="${args}-s "
+            ;;
+        --ldap-port)
+            args="${args}-t "
+            ;;
+        --ldap-basedn)
+            args="${args}-b "
+            ;;
+        --ldap-domain)
+            args="${args}-d "
+            ;;
+        --ldap-tls)
+            args="${args}-l "
+            ;;
+        --ldap-filter)
+            args="${args}-f "
+            ;;
+        --ldap-status)
+            args="${args}-e "
+            ;;
+        --masking-engine)
+            args="${args}-m "
+            ;;
+        --masking-user)
+            args="${args}-u "
+            ;;
+        --masking-pwd)
+            args="${args}-p "
+            ;;
+        --no-ask)
+            args="${args}-a "
+            ;;
+        --no-rollback)
+            args="${args}-r "
+            ;;
+        --help|-h)
+            show_help
+            ;;
+      *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+         args="${args}${delim}${arg}${delim} ";;
+    esac
+done
+
+eval set -- $args
+
+while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r" PARAMETERS; do
+    case $PARAMETERS in
+        h)
+        	;;
+        s)
+        	LDAP_SERVER=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        t)
+        	LDAP_PORT=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        b)
+        	LDAP_BASEDN=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        d)
+        	LDAP_DOMAIN=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        l)
+        	LDAP_TLS=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        f)
+        	LDAP_FILTER=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        e)
+        	LDAP_STATUS=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        m)
+        	MASKING_ENGINE=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        u)
+        	MASKING_USERNAME=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        p)
+        	AA=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        a)
+        	NOASK=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        r)
+        	NOROLLBACK=${OPTARG[@]}
+        	add_parm "$PARAMETERS";
+        	;;
+        :) echo "Option -$OPTARG requires an argument."; exit 1;;
+        *) echo "$OPTARG is an unrecognized option"; exit 1;;
+    esac
+done
+
+check_parm "$allparms"
 
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --backtitle "Delphix LDAP Configurator" \
-          --yesno "Yes: Apply new LDAP parameters\nNo:  Quit safely!" 7 40 ; then
+          --yesno "Yes: Apply new LDAP parameters No:  Quit safely!" 5 60; then
    dpxlogin
-   print_msg ""
-   print_msg "Getting current LDAP parameters"
 
-   get_ldap_status
+   msg_box ""
+   msg_box "Getting current LDAP parameters"
+
    get_ldap_server
    get_ldap_port
    get_ldap_baseDN
    get_ldap_filter
    get_ldap_domain
    get_ldap_tls
-   
-   print_msg ""
-   print_msg "Setting new LDAP parameters"
+   get_ldap_status
 
-   LDAP_STATUS='true'
+   msg_box ""
+   msg_box "Setting new LDAP parameters"
+
+   set_ldap_server '{"settingValue": "'"$LDAP_SERVER"'"}'
+   set_ldap_port '{"settingValue": "'"$LDAP_PORT"'"}'
+   set_ldap_baseDN '{"settingValue": "'"$LDAP_BASEDN"'"}'
+   set_ldap_filter '{"settingValue": "'"$LDAP_FILTER"'"}'
+   set_ldap_domain '{"settingValue": "'"$LDAP_DOMAIN"'"}'
+   set_ldap_tls '{"settingValue": "'"$LDAP_TLS"'"}'
    set_ldap_status '{"settingValue": "'"$LDAP_STATUS"'"}'
 
-   LDAP_SERVER='192.168.73.160'
-   set_ldap_server '{"settingValue": "'"$LDAP_SERVER"'"}'
-
-   LDAP_PORT='389'
-   set_ldap_port '{"settingValue": "'"$LDAP_PORT"'"}'
-
-   LDAP_BASEDN='DC=gruponet,DC=com,DC=ar'
-   set_ldap_baseDN '{"settingValue": "'"$LDAP_BASEDN"'"}'
-
-   LDAP_FILTER='(&(objectClass=person)(sAMAccountName=?))'
-   set_ldap_filter '{"settingValue": "'"$LDAP_FILTER"'"}'
-
-   LDAP_DOMAIN='GRUPONET'
-   set_ldap_domain '{"settingValue": "'"$LDAP_DOMAIN"'"}'
-
-   LDAP_TLS='false'
-   set_ldap_tls '{"settingValue": "'"$LDAP_TLS"'"}'
-
-   print_msg ""
-   print_msg "You have $KEEPALIVE seconds to test changes and revert back them if needed. Hurry Up!"
-   print_msg ""
-   print_msg "Yes: Revert to old LDAP parameters"
-   print_msg "No: Keep new parameters and Quit."
+   msg_box ""
+   msg_box "You have $KEEPALIVE seconds to test changes and revert back them if needed. Hurry Up!"
+   msg_box ""
+   msg_box "Yes: Revert to old LDAP parameters No: Keep new parameters and Quit."
 
    if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
     	      --backtitle "Delphix LDAP Configurator" \
      	      --yesno "$message_text" 0 0; then
-      print_msg ""
-      print_msg "Reverting LDAP Parameters"
 
-      LDAP_STATUS='false'
-      set_ldap_status '{"settingValue": "'"$LDAP_STATUS"'"}'
+      msg_box ""
+      msg_box "Reverting LDAP Parameters"
 
       LDAP_SERVER='10.10.10.31'
       set_ldap_server '{"settingValue": "'"$LDAP_SERVER"'"}'
@@ -298,15 +466,18 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
       LDAP_TLS='false'
       set_ldap_tls '{"settingValue": "'"$LDAP_TLS"'"}'
 
-      print_msg ""   
+      LDAP_STATUS='false'
+      set_ldap_status '{"settingValue": "'"$LDAP_STATUS"'"}'
+
+      msg_box ""
       dpxlogout
-      
-      echo "$message_text" > dpx_config_ldap.log
+
+      echo "$message_text" > dpxcc_config_ldap.log
       dialog --stdout --no-collapse --title "Change LDAP Parameters" \
              --backtitle "Delphix LDAP Configurator" \
              --msgbox "$message_text" 0 0
    else
-      print_msg ""
+      msg_box ""
       dpxlogout
    fi
 else
