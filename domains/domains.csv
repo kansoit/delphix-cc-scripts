@@ -1,27 +1,29 @@
-# Domain Name;Classification;Algorithm
-AR_NOMBRE;CUSTOMER;FirstNameLookup
-AR_APELLIDO;CUSTOMER;LastNameLookup
-AR_NOMBRE_COMPLETO;CUSTOMER;FullNMLookup
-AR_DIRECCION;CUSTOMER;AddrLookup
-AR_CP;CUSTOMER;dlpx-core:CM Numeric
-AR_DNI;CUSTOMER;dlpx-core:CM Numeric
-AR_TELEFONO;CUSTOMER;TelephoneNoLookup
-AR_CIUDAD;CUSTOMER;USCitiesLookup
-AR_BARRIO;CUSTOMER;USCountiesLookup
-AR_PROVINCIA;CUSTOMER;USstatecodesLookup
-AR_USUARIO;CUSTOMER;EmailLookup
-AR_EMPRESA;CUSTOMER;BusinessLegalEntityLookup
-AR_PASAPORTE;CUSTOMER;dlpx-core:CM Numeric
-AR_CUENTA;CUSTOMER;dlpx-core:CM Numeric
-AR_CUILT;CUSTOMER;dlpx-core:CM Numeric
-AR_TARJ;CUSTOMER;CreditCard
-AR_CALLE;CUSTOMER;SecureShuffle
-AR_SEXO;CUSTOMER;SecureShuffle
-CH_RUNT;CUSTOMER;dlpx-core:CM Numeric
-AR_FECNAC;CUSTOMER;DateShiftVariable
-MX_CURP;CUSTOMER;dlpx-core:CM Numeric
-MX_RFC;CUSTOMER;dlpx-core:CM Numeric
-AR_NACIONALIDAD;CUSTOMER;SecureShuffle
-AR_TXTLIBRE;CUSTOMER;NullValueLookup
-CO_DIRECCION;CUSTOMER;AddrLookup
-CO_NIPNIT;CUSTOMER;dlpx-core:CM Numeric
+# domainName;defaultAlgorithmCode;defaultTokenizationCode
+0_AR_NOMBRE;FirstNameLookup;;
+0_AR_APELLIDO;LastNameLookup;;
+0_AR_NOMBRE_COMPLETO;FullNMLookup;;
+0_AR_DIRECCION;AddrLookup;;
+0_AR_CBU;dlpx-core:CM Numeric;;
+0_AR_ALIAS;dlpx-core:CM Numeric;;
+0_AR_CP;dlpx-core:CM Numeric;;
+0_AR_DNI;dlpx-core:CM Numeric;;
+0_AR_PASAPORTE;dlpx-core:CM Numeric;;
+0_AR_TELEFONO;dlpx-core:Phone Unique;;
+0_AR_CIUDAD;USCitiesLookup;;
+0_AR_BARRIO;USCountiesLookup;;
+0_AR_PROVINCIA;USstatecodesLookup;;
+0_AR_USUARIO;EmailLookup;;
+0_AR_EMPRESA;BusinessLegalEntityLookup;;
+0_AR_CUENTA;dlpx-core:CM Numeric;;
+0_AR_CUILT;dlpx-core:CM Numeric;;
+0_AR_TARJ;CreditCard;;
+0_AR_CALLE;SecureShuffle;;
+0_AR_SEXO;SecureShuffle;;
+0_AR_FECNAC;DateShiftVariable;;
+0_AR_NACIONALIDAD;SecureShuffle;;
+0_AR_TXTLIBRE;NullValueLookup;;
+1_CH_RUNT;dlpx-core:CM Numeric;;
+2_CO_DIRECCION;AddrLookup;;
+2_CO_NIPNIT;dlpx-core:CM Numeric;;
+3_MX_CURP;dlpx-core:CM Numeric;;
+3_MX_RFC;dlpx-core:CM Numeric;;
