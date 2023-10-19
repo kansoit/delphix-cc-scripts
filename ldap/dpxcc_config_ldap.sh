@@ -17,6 +17,7 @@ NOROLLBACK='no'
 KEEPALIVE=600
 LOG_FILE='dpxcc_config_ldap.log'
 
+
 show_help() {
     echo "Usage: dpcc_config_ldap.sh [options]"
     echo "Options:"
@@ -110,7 +111,7 @@ check_error() {
     fi
 }
 
-log () {
+log() {
     echo -ne "[`date '+%d%m%Y %T'`] $1" >> "$LOG_FILE"
 }
 
@@ -431,10 +432,13 @@ while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r:" PARAMETERS; do
     esac
 done
 
+# Check parameters
 check_parm "$ALLPARMS"
 
+# Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
 
+# Delete logfile
 rm "$LOG_FILE"
 
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
