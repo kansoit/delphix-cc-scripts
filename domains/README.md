@@ -19,5 +19,5 @@
 #    --masking-pwd            -p Password                                                           Required Value
 #    --help                   -h help
 #
-#   Ex.: dpxcc_setup.sh --profile-name <PROFILE> -e ./expressions.csv -d domains.csv -m <Masking IP> -u <Masking User> -p <Masking Password>
+#   Ex.: dpxcc_setup_profileset.sh --profile-name <PROFILE> -e ./expressions.csv -d domains.csv -m <Masking IP> -u <Masking User> -p <Masking Password>
 ```
