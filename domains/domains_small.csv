@@ -1,0 +1,4 @@
+# domainName;defaultAlgorithmCode;defaultTokenizationCode
+0_AR_NOMBRE;FirstNameLookup;;
+0_AR_APELLIDO;LastNameLookup;;
+0_AR_NOMBRE_COMPLETO;FullNMLookup;;
