@@ -12,8 +12,8 @@
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
 #    --profile-name           -p Profile name                                                       Required Value
-#    --expressions-file       -e CSV file like ExpressionName;DomainName;level;Regex                expressions.csv
-#    --domains-file           -d CSV file like Domain Name;Classification;Algorithm                 domains.csv
+#    --expressions-file       -e CSV file: ExpressionName;DomainName;level;Regex                    expressions.csv
+#    --domains-file           -d CSV file: domainName;defaultAlgorithmCode;defaultTokenizationCode  domains.csv
 #    --masking-engine         -m Masking Engine Address                                             Required Value
 #    --masking-user           -u Masking Engine User Name                                           Required Value
 #    --masking-pwd            -p Password                                                           Required Value
