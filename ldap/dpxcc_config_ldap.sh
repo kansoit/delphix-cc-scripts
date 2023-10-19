@@ -79,14 +79,14 @@ check_parm() {
 }
 
 check_packages() {
-	# Check Required Packages
-	local JQ="$(which jq)"
-	local CURL="$(which curl)"
-	local DIALOG="$(which dialog)"
+    # Check Required Packages
+    local JQ="$(which jq)"
+    local CURL="$(which curl)"
+    local DIALOG="$(which dialog)"
 
-	[ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
-	[ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
-	[ -x "${DIALOG}" ] || { echo "dialog not found. Please install 'dialog' package and try again." ; exit 1 ; }
+    [ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
+    [ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
+    [ -x "${DIALOG}" ] || { echo "dialog not found. Please install 'dialog' package and try again." ; exit 1 ; }
 }
 
 # Check if $1 not empty. If so print out message specified in $2 and exit.
@@ -111,7 +111,7 @@ check_error() {
 }
 
 log () {
-  echo -ne "[`date '+%d%m%Y %T'`] $1" >> "$LOG_FILE"
+    echo -ne "[`date '+%d%m%Y %T'`] $1" >> "$LOG_FILE"
 }
 
 msg_box() {
@@ -440,7 +440,7 @@ rm "$LOG_FILE"
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --backtitle "Delphix LDAP Configurator" \
           --yesno "Yes: Apply new LDAP parameters No:  Quit safely!" 5 60; then
-          
+
    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
    msg_box "\n"
@@ -479,7 +479,7 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
       msg_box "\n"
       msg_box "Reverting LDAP Parameters\n"
       log "Reverting LDAP Parameters\n"
-    
+
       set_ldap_server "10.10.10.31"
       set_ldap_port   "389"
       set_ldap_baseDN "DC=tbspune,DC=com"
