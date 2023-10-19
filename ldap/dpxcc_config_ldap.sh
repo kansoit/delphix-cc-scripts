@@ -15,7 +15,7 @@ LDAP_ENABLED='false'
 NOASK='no'
 NOROLLBACK='no'
 KEEPALIVE=600
-declare -a messages
+LOG_FILE='dpxcc_config_ldap.log'
 
 show_help() {
     echo "Usage: dpcc_config_ldap.sh [options]"
@@ -46,34 +46,33 @@ die() {
     exit 1
 }
 
-add_parm() {
-    parms+=("$1")
-    allparms=$(printf "%s" "${parms[@]}")
+add_parms() {
+    ALLPARMS="$ALLPARMS""$1"
 }
 
 check_parm() {
-    local PARM="$1"
+    local PARMS="$1"
 
     local KEY="u"
-    if [[ ! "$PARM" == *"$KEY"* ]]; then
+    if [[ ! "$PARMS" == *"$KEY"* ]]; then
         echo "Option -u is missing. Masking Engine User Name is required."
         exit 1
     fi
 
     local KEY="p"
-    if [[ ! "$PARM" == *"$KEY"* ]]; then
+    if [[ ! "$PARMS" == *"$KEY"* ]]; then
         echo "Option -p is missing. Masking Engine Password is required."
         exit 1
     fi
 
     local KEY="s"
-    if [[ ! "$PARM" == *"$KEY"* ]]; then
+    if [[ ! "$PARMS" == *"$KEY"* ]]; then
         echo "Option -s is missing. LDAP Server IP Address is required."
         exit 1
     fi
 
     local KEY="m"
-    if [[ ! "$PARM" == *"$KEY"* ]]; then
+    if [[ ! "$PARMS" == *"$KEY"* ]]; then
         echo "Option -m is missing. Masking Engine IP Address is required."
         exit 1
     fi
@@ -111,9 +110,12 @@ check_error() {
     fi
 }
 
+log () {
+  echo -ne "[`date '+%d%m%Y %T'`] $1" >> "$LOG_FILE"
+}
+
 msg_box() {
-    messages+=("$1")
-    message_text=$(printf "%s\n" "${messages[@]}")
+    ALLMSG="$ALLMSG""$1"
 }
 
 # Login and set the correct $AUTH_HEADER.
@@ -128,7 +130,8 @@ dpxlogin() {
     check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
-    msg_box "$MASKING_USERNAME logged in successfully"
+    msg_box "$MASKING_USERNAME logged in successfully\n"
+    log "$MASKING_USERNAME logged in successfully\n"
 }
 
 # Logout
@@ -136,7 +139,8 @@ dpxlogout() {
     local FUNC='dpxlogout'
     local API='logout'
     LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
-    msg_box "$MASKING_USERNAME Logged out successfully"
+    msg_box "$MASKING_USERNAME Logged out successfully\n"
+    log "$MASKING_USERNAME Logged out successfully\n"
 }
 
 # Get LDAP Server Name
@@ -147,7 +151,8 @@ get_ldap_server() {
     check_error "$FUNC" "$API" "$LDAP_SERVER_RESPONSE"
     LDAP_SERVER_VALUE=$(echo $LDAP_SERVER_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_SERVER_VALUE"
-    msg_box "LDAP server: $LDAP_SERVER_VALUE"
+    msg_box "LDAP server: $LDAP_SERVER_VALUE\n"
+    log "Get LDAP server: $LDAP_SERVER_VALUE\n"
 }
 
 # Get LDAP Port Number (389/686=SSL)
@@ -158,7 +163,8 @@ get_ldap_port() {
     check_error "$FUNC" "$API" "$LDAP_PORT_RESPONSE"
     LDAP_PORT_VALUE=$(echo $LDAP_PORT_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_PORT_VALUE"
-    msg_box "LDAP port: $LDAP_PORT_VALUE"
+    msg_box "LDAP port: $LDAP_PORT_VALUE\n"
+    log "Get LDAP port: $LDAP_PORT_VALUE\n"
 }
 
 # Get LDAP BaseDN
@@ -169,7 +175,8 @@ get_ldap_baseDN() {
     check_error "$FUNC" "$API" "$LDAP_BASEDN_RESPONSE"
     LDAP_BASEDN_VALUE=$(echo $LDAP_BASEDN_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_BASEDN_VALUE"
-    msg_box "LDAP baseDN: $LDAP_BASEDN_VALUE"
+    msg_box "LDAP baseDN: $LDAP_BASEDN_VALUE\n"
+    log "Get LDAP baseDN: $LDAP_BASEDN_VALUE\n"
 }
 
 # Get LDAP Filter
@@ -180,7 +187,8 @@ get_ldap_filter() {
     check_error "$FUNC" "$API" "$LDAP_FILTER_RESPONSE"
     LDAP_FILTER_VALUE=$(echo $LDAP_FILTER_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_FILTER_VALUE"
-    msg_box "LDAP filter: $LDAP_FILTER_VALUE"
+    msg_box "LDAP filter: $LDAP_FILTER_VALUE\n"
+    log "Get LDAP filter: $LDAP_FILTER_VALUE\n"
 }
 
 # Get LDAP Domain
@@ -191,7 +199,8 @@ get_ldap_domain() {
     check_error "$FUNC" "$API" "$LDAP_DOMAIN_RESPONSE"
     LDAP_DOMAIN_VALUE=$(echo $LDAP_DOMAIN_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_DOMAIN_VALUE"
-    msg_box "LDAP domain: $LDAP_DOMAIN_VALUE"
+    msg_box "LDAP domain: $LDAP_DOMAIN_VALUE\n"
+    log "Get LDAP domain: $LDAP_DOMAIN_VALUE\n"
 }
 
 # Get LDAP TLS (true/false)
@@ -202,7 +211,8 @@ get_ldap_tls() {
     check_error "$FUNC" "$API" "$LDAP_TLS_RESPONSE"
     LDAP_TLS_VALUE=$(echo $LDAP_TLS_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_TLS_VALUE"
-    msg_box "LDAP tls: $LDAP_TLS_VALUE"
+    msg_box "LDAP tls: $LDAP_TLS_VALUE\n"
+    log "Get LDAP tls: $LDAP_TLS_VALUE\n"
 }
 
 # Get LDAP Status (true/false)
@@ -213,7 +223,8 @@ get_ldap_status() {
     check_error "$FUNC" "$API" "$LDAP_STATUS_RESPONSE"
     LDAP_STATUS_VALUE=$(echo $LDAP_STATUS_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_STATUS_VALUE"
-    msg_box "LDAP status: $LDAP_STATUS_VALUE"
+    msg_box "LDAP status: $LDAP_STATUS_VALUE\n"
+    log "Get LDAP status: $LDAP_STATUS_VALUE\n"
 }
 
 set_ldap_server() {
@@ -225,7 +236,8 @@ set_ldap_server() {
     check_error "$FUNC" "$API" "$LDAP_SERVER_RESPONSE"
     LDAP_SERVER_VALUE=$(echo $LDAP_SERVER_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_SERVER_VALUE"
-    msg_box "LDAP server: $LDAP_SERVER_VALUE"
+    msg_box "LDAP server: $LDAP_SERVER_VALUE\n"
+    log "Set LDAP server: $LDAP_SERVER_VALUE\n"
 }
 
 set_ldap_port() {
@@ -237,7 +249,8 @@ set_ldap_port() {
     check_error "$FUNC" "$API" "$LDAP_PORT_RESPONSE"
     LDAP_PORT_VALUE=$(echo $LDAP_PORT_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_PORT_VALUE"
-    msg_box "LDAP port: $LDAP_PORT_VALUE"
+    msg_box "LDAP port: $LDAP_PORT_VALUE\n"
+    log "Set LDAP port: $LDAP_PORT_VALUE\n"
 }
 
 set_ldap_baseDN() {
@@ -249,7 +262,8 @@ set_ldap_baseDN() {
     check_error "$FUNC" "$API" "$LDAP_BASEDN_RESPONSE"
     LDAP_BASEDN_VALUE=$(echo $LDAP_BASEDN_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_BASEDN_VALUE"
-    msg_box "LDAP baseDN: $LDAP_BASEDN_VALUE"
+    msg_box "LDAP baseDN: $LDAP_BASEDN_VALUE\n"
+    log "Set LDAP baseDN: $LDAP_BASEDN_VALUE\n"
 }
 
 set_ldap_filter() {
@@ -261,7 +275,8 @@ set_ldap_filter() {
     check_error "$FUNC" "$API" "$LDAP_FILTER_RESPONSE"
     LDAP_FILTER_VALUE=$(echo $LDAP_FILTER_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_FILTER_VALUE"
-    msg_box "LDAP filter: $LDAP_FILTER_VALUE"
+    msg_box "LDAP filter: $LDAP_FILTER_VALUE\n"
+    log "Set LDAP filter: $LDAP_FILTER_VALUE\n"
 }
 
 set_ldap_domain() {
@@ -273,7 +288,8 @@ set_ldap_domain() {
     check_error "$FUNC" "$API" "$LDAP_DOMAIN_RESPONSE"
     LDAP_DOMAIN_VALUE=$(echo $LDAP_DOMAIN_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_DOMAIN_VALUE"
-    msg_box "LDAP domain: $LDAP_DOMAIN_VALUE"
+    msg_box "LDAP domain: $LDAP_DOMAIN_VALUE\n"
+    log "Set LDAP domain: $LDAP_DOMAIN_VALUE\n"
 }
 
 set_ldap_tls() {
@@ -285,7 +301,8 @@ set_ldap_tls() {
     check_error "$FUNC" "$API" "$LDAP_TLS_RESPONSE"
     LDAP_TLS_VALUE=$(echo $LDAP_TLS_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_TLS_VALUE"
-    msg_box "LDAP tls: $LDAP_TLS_VALUE"
+    msg_box "LDAP tls: $LDAP_TLS_VALUE\n"
+    log "Set LDAP tls: $LDAP_TLS_VALUE\n"
 }
 
 set_ldap_status() {
@@ -297,7 +314,8 @@ set_ldap_status() {
     check_error "$FUNC" "$API" "$LDAP_STATUS_RESPONSE"
     LDAP_STATUS_VALUE=$(echo $LDAP_STATUS_RESPONSE | jq -r '.settingValue')
     check_response "$LDAP_STATUS_VALUE"
-    msg_box "LDAP status: $LDAP_STATUS_VALUE"
+    msg_box "LDAP status: $LDAP_STATUS_VALUE\n"
+    log "Set LDAP status: $LDAP_STATUS_VALUE\n"
 }
 
 check_packages
@@ -356,66 +374,68 @@ done
 
 eval set -- $args
 
-while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r" PARAMETERS; do
+while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
         s)
         	LDAP_SERVER=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         t)
         	LDAP_PORT=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         b)
         	LDAP_BASEDN=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         d)
         	LDAP_DOMAIN=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         l)
         	LDAP_TLS=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         f)
         	LDAP_FILTER=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         e)
         	LDAP_STATUS=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         m)
         	MASKING_ENGINE=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         u)
         	MASKING_USERNAME=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         p)
         	MASKING_PASSWORD=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         a)
         	NOASK=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         r)
         	NOROLLBACK=${OPTARG[@]}
-        	add_parm "$PARAMETERS";
+        	add_parms "$PARAMETERS";
         	;;
         :) echo "Option -$OPTARG requires an argument."; exit 1;;
         *) echo "$OPTARG is an unrecognized option"; exit 1;;
     esac
 done
 
-check_parm "$allparms"
+check_parm "$ALLPARMS"
 
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
+
+rm "$LOG_FILE"
 
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --backtitle "Delphix LDAP Configurator" \
@@ -423,8 +443,9 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           
    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
-   msg_box ""
-   msg_box "Getting current LDAP parameters"
+   msg_box "\n"
+   msg_box "Getting current LDAP parameters\n"
+   log "Getting current LDAP parameters\n"
 
    get_ldap_server
    get_ldap_port
@@ -434,8 +455,9 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
    get_ldap_tls
    get_ldap_status
 
-   msg_box ""
-   msg_box "Applying new LDAP parameters"
+   msg_box "\n"
+   msg_box "Applying new LDAP parameters\n"
+   log "Applying new LDAP parameters\n"
 
    set_ldap_server "$LDAP_SERVER"
    set_ldap_port   "$LDAP_PORT"
@@ -445,17 +467,18 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
    set_ldap_tls    "$LDAP_TLS"
    set_ldap_status "$LDAP_STATUS"
 
-   msg_box ""
-   msg_box "You have $KEEPALIVE seconds to test changes and revert back them if needed. Hurry Up!"
-   msg_box ""
-   msg_box "Yes: Revert to factory LDAP parameters No: Keep new parameters and Quit."
+   msg_box "\n"
+   msg_box "You have $KEEPALIVE seconds to test changes and revert back them if needed. Hurry Up!\n"
+   msg_box "\n"
+   msg_box "Yes: Revert to factory LDAP parameters No: Keep new parameters and Quit.\n"
 
    if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
     	      --backtitle "Delphix LDAP Configurator" \
-     	      --yesno "$message_text" 0 0; then
+     	      --yesno "$ALLMSG" 0 0; then
 
-      msg_box ""
-      msg_box "Reverting LDAP Parameters"
+      msg_box "\n"
+      msg_box "Reverting LDAP Parameters\n"
+      log "Reverting LDAP Parameters\n"
     
       set_ldap_server "10.10.10.31"
       set_ldap_port   "389"
@@ -465,15 +488,14 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
       set_ldap_tls    "false"
       set_ldap_status "false"
 
-      msg_box ""
+      msg_box "\n"
       dpxlogout
 
-      echo "$message_text" > dpxcc_config_ldap.log
       dialog --stdout --no-collapse --title "Change LDAP Parameters" \
              --backtitle "Delphix LDAP Configurator" \
-             --msgbox "$message_text" 0 0
+             --msgbox "$ALLMSG" 0 0
    else
-      msg_box ""
+      msg_box "\n"
       dpxlogout
    fi
 else
