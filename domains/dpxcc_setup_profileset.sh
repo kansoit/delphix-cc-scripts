@@ -45,7 +45,7 @@ die() {
 }
 
 log (){
-  echo -ne "[`date '+%d%m%Y %T'`] $1" | tee -a "$LOG_FILE"
+    echo -ne "[`date '+%d%m%Y %T'`] $1" | tee -a "$LOG_FILE"
 }
 
 add_parms() {
@@ -81,12 +81,12 @@ check_parm() {
 }
 
 check_packages() {
-	# Check Required Packages
-	local JQ="$(which jq)"
-	local CURL="$(which curl)"
+    # Check Required Packages
+    local JQ="$(which jq)"
+    local CURL="$(which curl)"
 
-	[ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
-	[ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
+    [ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
+    [ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
 }
 
 # Check if $1 not empty. If so print out message specified in $2 and exit.
@@ -134,17 +134,17 @@ dpxlogout() {
 }
 
 add_domains() {
-	local DOMAIN_NAME="$1"
-	local DFT_ALGO_CODE="$2"
-	local DFT_TOKEN_CODE="$3"
+    local DOMAIN_NAME="$1"
+    local DFT_ALGO_CODE="$2"
+    local DFT_TOKEN_CODE="$3"
     local FUNC='add_domains'
     local API='domains'
 
-	if [ -z "$DFT_TOKEN_CODE" ]; then
-  		local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
-	else
-		local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"defaultTokenizationCode\": \"$DFT_TOKEN_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
-	fi
+    if [ -z "$DFT_TOKEN_CODE" ]; then
+       local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
+    else
+       local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"defaultTokenizationCode\": \"$DFT_TOKEN_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
+    fi
 
     local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE"
@@ -154,10 +154,10 @@ add_domains() {
 }
 
 add_expressions() {
-	local DOMAIN="$1"
-	local EXPRESSNAME="$2"
-	local REGEXP="$3"
-	local DATALEVEL="$4"
+    local DOMAIN="$1"
+    local EXPRESSNAME="$2"
+    local REGEXP="$3"
+    local DATALEVEL="$4"
     local FUNC='add_domains'
     local API='profile-expressions'
     local DATA="{ \"domainName\": \"$DOMAIN\", \"expressionName\": \"$EXPRESSNAME\", \"regularExpression\": \"$REGEXP\", \"dataLevelProfiling\": \"$DATALEVEL\"}"
@@ -167,15 +167,15 @@ add_expressions() {
     ADD_EXPRESS_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.expressionName')
     check_response "$ADD_EXPRESS_VALUE"
     log "Expression: $ADD_EXPRESS_VALUE added.\n"
-    
+
     # Return EXPRESSID_LIST
     EXPRESSID_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.profileExpressionId')
     EXPRESSID_LIST="$EXPRESSID_LIST,$EXPRESSID_VALUE"
 }
 
 add_profileset() {
-	local PROFILE_NAME="$1"
-	local EXPRESSID_LIST="$2"
+    local PROFILE_NAME="$1"
+    local EXPRESSID_LIST="$2"
     local FUNC='add_profileset'
     local API='profile-sets'
     local DATA="{ \"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ] }"
@@ -271,20 +271,20 @@ rm "$LOG_FILE"
 log "Creating domains: \n"
 while IFS=\; read -r DOMAIN_NAME DFT_ALGO_CODE DFT_TOKEN_CODE
 do
-	if [[ ! "$DOMAIN_NAME" =~ "#" ]]
-	then
-		add_domains "$DOMAIN_NAME" "$DFT_ALGO_CODE" "$DFT_TOKEN_CODE"
-	fi
+    if [[ ! "$DOMAIN_NAME" =~ "#" ]]
+    then
+        add_domains "$DOMAIN_NAME" "$DFT_ALGO_CODE" "$DFT_TOKEN_CODE"
+    fi
 done < "$DOMAINS_FILE"
 
 # Create Expressions
 log "Creating expressions: \n"
 while IFS=\; read -r EXPRESS_NAME DOMAIN DATALEVEL REGEXP
 do
-	if [[ ! "$EXPRESS_NAME" =~ "#" ]]
-	then
-		add_expressions "$DOMAIN" "$EXPRESS_NAME" "$REGEXP" "$DATALEVEL"
-	fi
+    if [[ ! "$EXPRESS_NAME" =~ "#" ]]
+    then
+        add_expressions "$DOMAIN" "$EXPRESS_NAME" "$REGEXP" "$DATALEVEL"
+    fi
 done < "$EXPRESS_FILE"
 
 # Add ProfileSet
