@@ -23,5 +23,5 @@
 #    --no-rollback            -r No Rollback dialog                                                 no
 #    --help                   -h help
 #
-#   Ex.: dpxcc_config_ldap.sh -s <Your IP> -b 'DC=candy,DC=com,DC=ar' -d 'CANDY' -e 'true' -m <Your IP> -u <Your User> -p <Your Password>
+#   Ex.: dpxcc_config_ldap.sh -s <Your IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <Your IP> -u <Your User> -p <Your Password>
 ```
