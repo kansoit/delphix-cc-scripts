@@ -258,14 +258,17 @@ while getopts ":h:f:e:d:m:u:p:" PARAMETERS; do
     esac
 done
 
+# Check all parameters
 check_parm "$ALLPARMS"
 
+# Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
-
-dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 # Delete logfile
 rm "$LOG_FILE"
+
+# Login
+dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 # Create Domains
 log "Creating domains: \n"
@@ -290,4 +293,5 @@ done < "$EXPRESS_FILE"
 # Add ProfileSet
 add_profileset "$PROFILE_NAME" "$EXPRESSID_LIST"
 
+# Logout
 dpxlogout
