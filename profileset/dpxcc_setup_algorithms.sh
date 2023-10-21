@@ -6,19 +6,21 @@ MASKING_USERNAME=""
 MASKING_PASSWORD=""
 URL_BASE=""
 ALGO_FILE=""
+IGN_ERROR="false"
 KEEPALIVE=300
 LOG_FILE='dpxcc_setup_algorithms.log'
 
 show_help() {
     echo "Usage: dpxcc_setup_algorithms.sh [options]"
     echo "Options:"
-    echo "  --algorithms-file   -a  File containing Algorithms   - Required value"
-    echo "  --masking-engine    -m  Masking Engine Address       - Required value"
-    echo "  --masking-username  -u  Masking Engine User Name     - Required value"
-    echo "  --masking-pwd       -p  Masking Engine Password      - Required value"
+    echo "  --algorithms-file   -a  File containing Algorithms            - Required value"
+    echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default Value: false"
+    echo "  --masking-engine    -m  Masking Engine Address                - Required value"
+    echo "  --masking-username  -u  Masking Engine User Name              - Required value"
+    echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -a algorithms.csv -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_profileset.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
     exit 1
 }
 
@@ -88,11 +90,16 @@ check_error() {
     local FUNC="$1"
     local API="$2"
     local RESPONSE="$3"
+    local IGNORE="$4"
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; then
+    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
+    then
         echo "Error: Func=$FUNC API=$API Response=$RESPONSE"
-        exit 1
+        if [[ "$IGNORE" == "false" ]];
+        then
+            exit 1
+        fi     
     fi
 }
 
@@ -126,7 +133,7 @@ upload_files() {
     local FUNC='upload_files'
     local API='file-uploads?permanent=false'
     local FILE_UPLOADS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type:  multipart/form-data' --keepalive-time "$KEEPALIVE" --form "$FORM" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$FILE_UPLOADS_RESPONSE"
+    check_error "$FUNC" "$API" "$FILE_UPLOADS_RESPONSE" "$IGN_ERROR"
     FILE_UPLOADS_VALUE=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.filename')
     check_response "$FILE_UPLOADS_VALUE"
     fileReferenceId=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.fileReferenceId')
@@ -148,7 +155,7 @@ add_sl_algorithms() {
     local FUNC='add_sl_algorithms'
     local API='algorithms'
 
-    #### SECURE LOOKUP FRAMEWORK=26 PLUGIN= 7 - OK NO TOCAR - ####
+    #### SECURE LOOKUP FRAMEWORK=26 PLUGIN= 7 - Don't touch. It's working - ####
     if [[ "$frameworkId" == "26" && "$pluginId" == "7" ]]
     then
         local lookupFile="{\"uri\": \"$uri\"}"
@@ -160,7 +167,7 @@ add_sl_algorithms() {
     fi
     
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
@@ -180,7 +187,7 @@ add_nm_algorithms() {
     local FUNC='add_nm_algorithms'
     local API='algorithms'
    
-    #### NAME FRAMEWORK=25 PLUGIN= 7 - OK NO TOCAR - ####
+    #### NAME FRAMEWORK=25 PLUGIN= 7 - Don't touch. It's working - ####
     if [[ "$frameworkId" == "25" && "$pluginId" == "7" ]]
     then
         local lookupFile="{\"uri\": \"$uri\"}"
@@ -192,7 +199,7 @@ add_nm_algorithms() {
     fi
     
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
@@ -215,7 +222,7 @@ add_nmfull_algorithms() {
     local FUNC='add_nmfull_algorithms'
     local API='algorithms'
 
-    #### FULLNAME FRAMEWORK=5 PLUGIN=7  --- OK NO TOCAR --- ####
+    #### FULLNAME FRAMEWORK=5 PLUGIN=7  --- Don't touch. It's working --- ####
     if [[ "$frameworkId" == "5" && "$pluginId" == "7" ]]
     then                   
         lastNameAlgRef="{\"name\": \"$lastNameAlgorithmRef\"}"
@@ -229,7 +236,7 @@ add_nmfull_algorithms() {
     fi
     
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
@@ -246,7 +253,7 @@ add_pc_algorithms() {
     local FUNC='add_pc_algorithms'
     local API='algorithms'
 
-    #### FULLNAME FRAMEWORK=10 PLUGIN=7  --- NO TOCAR ----- ####
+    #### FULLNAME FRAMEWORK=10 PLUGIN=7  --- Don't touch. It's working ----- ####
     if [[ "$frameworkId" == "10" && "$pluginId" == "7" ]]
     then
         local lookupFile="{\"uri\": \"$uri\"}"
@@ -256,7 +263,7 @@ add_pc_algorithms() {
     fi
     
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
@@ -274,6 +281,9 @@ do
     case "$arg" in
         --algorithm-file)
             args="${args}-a "
+            ;;
+        --ignore-errors)
+            args="${args}-i "
             ;;
         --masking-engine)
             args="${args}-m "
@@ -294,12 +304,16 @@ done
 
 eval set -- $args
 
-while getopts ":h:a:m:u:p:" PARAMETERS; do
+while getopts ":h:a:i:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
         a)
         	ALGO_FILE=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        i)
+        	IGN_ERROR=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -326,7 +340,7 @@ check_parm "$ALLPARMS"
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
 
 # Delete logfile
-# rm "$LOG_FILE"
+rm "$LOG_FILE" >>/dev/null 2>&1
 
 # Login
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
@@ -340,8 +354,7 @@ then
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
-            # upload_files "$fileName" "$fileType"
-            fileReferenceId="delphix-file://upload/f_7ae6eb2cfed040f8a4ae4f0324034a86/Provincias.txt"
+            upload_files "$fileName" "$fileType"
             add_sl_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$hashMethod" "$maskedValueCase" "$inputCaseSensitive"\
                               "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"       
         fi
@@ -355,8 +368,7 @@ then
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
-            # upload_files "$FILE_NAME" "$FILE_TYPE"
-            fileReferenceId="delphix-file://upload/f_7ae6eb2cfed040f8a4ae4f0324034a86/Provincias.txt"
+            upload_files "$fileName" "$fileType"
             add_nm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$maskedValueCase" "$inputCaseSensitive"\
                               "$filterAccent" "$maxLengthOfMaskedName" "$fileReferenceId"       
         fi
@@ -371,8 +383,7 @@ then
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
-            # upload_files "$FILE_NAME" "$FILE_TYPE" USO FUTURO
-            fileReferenceId="delphix-file://upload/f_7ae6eb2cfed040f8a4ae4f0324034a86/Provincias.txt"
+            # upload_files "$fileName" "$fileType" Future Use
             add_nmfull_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$lastNameAtTheEnd"\
                                   "$lastNameSeparators" "$maxNumberFirstNames" "$lastNameAlgorithmRef" "$firstNameAlgorithmRef" "$maxLengthOfMaskedName"\
                                   "$ifSingleWordConsiderAsLastName" "$lastNameAtTheEnd" "$fileReferenceId"       

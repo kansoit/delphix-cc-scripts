@@ -8,6 +8,9 @@ URL_BASE=""
 PROFILE_NAME=""
 EXPRESS_FILE='expressions.csv'
 DOMAINS_FILE='domains.csv'
+ALGO_META_FILE='algorithms.csv'
+ALGO_EXE='true'
+IGN_ERROR='false'
 KEEPALIVE=300
 LOG_FILE='dpxcc_setup_profileset.log'
 EXPRESSID_LIST="7,8,11,22,23,49,50"
@@ -24,15 +27,18 @@ EXPRESSID_LIST="7,8,11,22,23,49,50"
 show_help() {
     echo "Usage: dpxcc_setup_profileset.sh [options]"
     echo "Options:"
-    echo "  --profile-name      -f  Profile Name - Required value"
-    echo "  --expressions-file  -e  File containing Expressions - Default: expressions.csv"
-    echo "  --domains-file      -d  File containing Domains - Default: domains.csv"
-    echo "  --masking-engine    -m  Masking Engine Address - Required value"
-    echo "  --masking-username  -u  Masking Engine User Name - Required value"
-    echo "  --masking-pwd       -p  Masking Engine Password - Required value"
+    echo "  --profile-name      -f  Profile Name                                          - Required value"
+    echo "  --expressions-file  -e  File with Expressions                                 - Default: expressions.csv"
+    echo "  --domains-file      -d  File with Domains                                     - Default: domains.csv"
+    echo "  --algorithms-file   -a  Meta File with Algorithms files                       - Default: algorithms.csv"
+    echo "  --exe-algorithms    -x  Execute Algorithms Setup                              - Default: true"
+    echo "  --ignore-errors     -i  Ignore errors while adding domains/express/algorithms - Default: false"
+    echo "  --masking-engine    -m  Masking Engine Address                                - Required value"
+    echo "  --masking-username  -u  Masking Engine User Name                              - Required value"
+    echo "  --masking-pwd       -p  Masking Engine Password                               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -e expressions.csv -d domains.csv -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -e expressions.csv -d domains.csv -a algorithms.csv -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
     exit 1
 }
 
@@ -102,11 +108,16 @@ check_error() {
     local FUNC="$1"
     local API="$2"
     local RESPONSE="$3"
+    local IGNORE="$4"
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; then
+    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
+    then
         echo "Error: Func=$FUNC API=$API Response=$RESPONSE"
-        exit 1
+        if [[ "$IGNORE" == "false" ]];
+        then
+            exit 1
+        fi     
     fi
 }
 
@@ -119,7 +130,7 @@ dpxlogin() {
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
     LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
 ) || die "Login failed with exit code $?"
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
+    check_error "$FUNC" "$API" "$LOGIN_RESPONSE" 
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
     log "$MASKING_USERNAME logged in successfully\n"
@@ -147,7 +158,7 @@ add_domains() {
     fi
 
     local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE" "$IGN_ERROR"
     ADD_DOMAINS_VALUE=$(echo "$ADD_DOMAINS_RESPONSE" | jq -r '.domainName')
     check_response "$ADD_DOMAINS_VALUE"
     log "Domain: $ADD_DOMAINS_VALUE added.\n"
@@ -163,14 +174,17 @@ add_expressions() {
     local DATA="{ \"domainName\": \"$DOMAIN\", \"expressionName\": \"$EXPRESSNAME\", \"regularExpression\": \"$REGEXP\", \"dataLevelProfiling\": \"$DATALEVEL\"}"
 
     local ADD_EXPRESS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_EXPRESS_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_EXPRESS_RESPONSE" "$IGN_ERROR"
     ADD_EXPRESS_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.expressionName')
     check_response "$ADD_EXPRESS_VALUE"
     log "Expression: $ADD_EXPRESS_VALUE added.\n"
 
     # Return EXPRESSID_LIST
     EXPRESSID_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.profileExpressionId')
-    EXPRESSID_LIST="$EXPRESSID_LIST,$EXPRESSID_VALUE"
+    if [[ ! "$EXPRESSID_VALUE" == "null" ]];
+    then
+        EXPRESSID_LIST="$EXPRESSID_LIST,$EXPRESSID_VALUE"
+    fi
 }
 
 add_profileset() {
@@ -180,7 +194,7 @@ add_profileset() {
     local API='profile-sets'
     local DATA="{ \"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ] }"
     local ADD_PROFILE_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$ADD_PROFILE_RESPONSE"
+    check_error "$FUNC" "$API" "$ADD_PROFILE_RESPONSE" "$IGN_ERROR"
     ADD_PROFILE_VALUE=$(echo "$ADD_PROFILE_RESPONSE" | jq -r '.profileSetName')
     check_response "$ADD_PROFILE_VALUE"
     log "ProfileSet: $ADD_PROFILE_VALUE added.\n"
@@ -206,6 +220,15 @@ do
         --domains-file)
             args="${args}-d "
             ;;
+        --algorithms-file)
+            args="${args}-a "
+            ;;        
+        --exe-algorithms)
+            args="${args}-x "
+            ;;        
+        --ignore-errors)
+            args="${args}-i "
+            ;;        
         --masking-engine)
             args="${args}-m "
             ;;
@@ -225,7 +248,7 @@ done
 
 eval set -- $args
 
-while getopts ":h:f:e:d:m:u:p:" PARAMETERS; do
+while getopts ":h:f:e:d:a:x:i:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
@@ -239,6 +262,18 @@ while getopts ":h:f:e:d:m:u:p:" PARAMETERS; do
         	;;
         d)
         	DOMAINS_FILE=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        a)
+        	ALGO_META_FILE=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        x)
+        	ALGO_EXE=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        i)
+        	IGN_ERROR=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -265,10 +300,23 @@ check_parm "$ALLPARMS"
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
 
 # Delete logfile
-rm "$LOG_FILE"
+rm "$LOG_FILE" >>/dev/null 2>&1
 
 # Login
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+
+# Create Algorithms
+if [[ "$ALGO_EXE" == "true" ]];
+then
+    log "Creating algorithms: \n"
+    while IFS=\; read -r fileName
+    do
+        if [[ ! "$fileName" =~ "#" ]]
+        then
+		   ./dpxcc_setup_algorithms.sh -a "$fileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"        
+        fi
+    done < "$ALGO_META_FILE"
+fi
 
 # Create Domains
 log "Creating domains: \n"
