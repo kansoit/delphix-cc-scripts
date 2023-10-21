@@ -1,0 +1,2 @@
+#algorithmName;algorithmType;description;frameworkId;pluginId;lastNameAtTheEnd;lastNameSeparators;maxNumberFirstNames;lastNameAlgorithmRef;firstNameAlgorithmRef;maxLengthOfMaskedName;ifSingleWordConsiderAsLastName;FILE_NAME;FILE_TYPE
+0_AR_NOMBRE_COMPLETO_FN;COMPONENT;Nombre_Apellido_FM;5;7;true;",";2;0_AR_APELLIDO_NM;0_AR_NOMBRE_NM;0;true;;
