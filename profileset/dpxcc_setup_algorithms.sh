@@ -20,7 +20,7 @@ show_help() {
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
     exit 1
 }
 
