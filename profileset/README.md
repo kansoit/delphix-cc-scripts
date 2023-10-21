@@ -39,6 +39,6 @@
 #    --masking-pwd         -p    Masking Engine Password                                            Required value
 #    --help                -h    Show this help
 #     
-#    Example: dpxcc_setup_profileset.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>
+#    Example: dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>
 #
 ```
