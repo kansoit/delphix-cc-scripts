@@ -4,7 +4,7 @@
 0_AR_NOMBRE_COMPLETO;0_AR_NOMBRE_COMPLETO_FN;;
 0_AR_DIRECCION;0_AR_DIRECCION_SL;;
 0_AR_CBU;dlpx-core:CM Numeric;;
-0_AR_ALIAS;dlpx-core:CM Numeric;;
+0_AR_ALIAS;dlpx-core:CM Alpha-Numeric;;
 0_AR_CP;dlpx-core:CM Numeric;;
 0_AR_DNI;dlpx-core:CM Numeric;;
 0_AR_PASAPORTE;dlpx-core:CM Alpha-Numeric;;
