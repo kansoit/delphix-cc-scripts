@@ -1,0 +1,2 @@
+# algorithmName;algorithmType;description;frameworkId;pluginId;nameAction;domainAction;nameAlgorithm;nameLookupFile;domainAlgorithm;domainReplacementString
+0_AR_EMAIL_EMAIL;COMPONENT;0_AR_EMAIL_EMAIL;22;7;APPLY_ALGORITHM;APPLY_ALGORITHM;dlpx-core:CM Alpha-Numeric;null;dlpx-core:CM Alpha-Numeric;null

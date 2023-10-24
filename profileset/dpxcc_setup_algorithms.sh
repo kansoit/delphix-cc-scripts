@@ -302,6 +302,41 @@ add_cm_algorithms() {
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
+add_em_algorithms() {
+    local algorithmName="$1"
+    local algorithmType="$2"
+    local description="$3"
+    local frameworkId="$4"
+    local pluginId="$5"
+    local nameAction="${6}"
+    local domainAction="${7}"
+    local nameAlgorithm="${8}"
+    local nameLookupFile="${9}"
+    local domainAlgorithm="${10}"
+    local domainReplacementString="${11}"
+    local FUNC='add_em_algorithms'
+    local API='algorithms'
+
+    #### FULLNAME FRAMEWORK=22 PLUGIN=7  --- In Progress --- ####
+    if [[ "$frameworkId" == "22" && "$pluginId" == "7" ]]
+    then                   
+        nameAlgo="{\"name\": \"$nameAlgorithm\"}"
+        domainAlgo="{\"name\": \"$domainAlgorithm\"}"
+        algorithmExtension="{\"nameAction\": \"$nameAction\", \"domainAction\": \"$domainAction\", \"nameAlgorithm\": $nameAlgo, 
+                             \"nameLookupFile\": $nameLookupFile, \"domainAlgorithm\": $domainAlgo,
+                             \"domainReplacementString\": $domainReplacementString}"                        
+        DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
+               \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}"
+        echo "$DATA"
+    fi
+    
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
+    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
+    check_response "$ADD_ALGO_VALUE"
+    log "Algorithm: $ADD_ALGO_VALUE added.\n"
+}
+
 
 check_packages
 
@@ -448,6 +483,20 @@ then
         fi
     done < "$ALGO_FILE"
 fi
+
+if [[ "$ALGO_FILE" == *"em_"* ]]
+then
+    while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId nameAction \
+                         domainAction nameAlgorithm nameLookupFile domainAlgorithm domainReplacementString  
+    do
+        if [[ ! "$algorithmName" =~ "#" ]]
+        then
+            add_em_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$nameAction"\
+                              "$domainAction" "$nameAlgorithm" "$nameLookupFile" "$domainAlgorithm" "$domainReplacementString"
+        fi
+    done < "$ALGO_FILE"
+fi
+
 
 # Logout
 dpxlogout
