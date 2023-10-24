@@ -20,7 +20,7 @@ show_help() {
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_profileset.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
     exit 1
 }
 
@@ -269,6 +269,40 @@ add_pc_algorithms() {
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
+add_cm_algorithms() {
+    local algorithmName="$1"
+    local algorithmType="$2"
+    local description="$3"
+    local frameworkId="$4"
+    local pluginId="$5"
+    local caseSensitive="${6}"
+    local start="${7}"
+    local length="${8}"
+    local direction="${9}"
+    local characterGroups="${10}"
+    local minMaskedPositions="${11}"   
+    local preserveLeadingZeros="${12}"
+    local FUNC='add_cm_algorithms'
+    local API='algorithms'
+
+    #### FULLNAME FRAMEWORK=21 PLUGIN=7  --- Don't touch. It's working ----- ####
+    if [[ "$frameworkId" == "21" && "$pluginId" == "7" ]]
+    then                   
+        preserveRanges="{\"start\": $start, \"length\": $length, \"direction\": \"$direction\"}"       
+        algorithmExtension="{\"caseSensitive\": $caseSensitive, \"preserveRanges\": [$preserveRanges], \"characterGroups\":  [\"$characterGroups\"], 
+                             \"minMaskedPositions\": $minMaskedPositions, \"preserveLeadingZeros\": $preserveLeadingZeros"
+        DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
+               \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}}"
+    fi
+
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
+    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
+    check_response "$ADD_ALGO_VALUE"
+    log "Algorithm: $ADD_ALGO_VALUE added.\n"
+}
+
+
 check_packages
 
 # Parameters
@@ -398,6 +432,19 @@ then
         if [[ ! "$algorithmName" =~ "#" ]]
         then
             add_pc_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$preserve" "$minMaskedPositions"
+        fi
+    done < "$ALGO_FILE"
+fi
+
+if [[ "$ALGO_FILE" == *"cm_"* ]]
+then
+    while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId caseSensitive \
+                         start length direction characterGroups minMaskedPositions preserveLeadingZeros
+    do
+        if [[ ! "$algorithmName" =~ "#" ]]
+        then
+            add_cm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$caseSensitive"\
+                                  "$start" "$length" "$direction" "$characterGroups" "$minMaskedPositions" "$preserveLeadingZeros"
         fi
     done < "$ALGO_FILE"
 fi

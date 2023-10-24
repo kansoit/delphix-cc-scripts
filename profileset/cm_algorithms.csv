@@ -1,0 +1,3 @@
+#algorithmName;algorithmType;description;frameworkId;pluginId;caseSensitive;start;length;direction;characterGroups;minMaskedPositions;preserveLeadingZeros
+0_AR_CUILT_CM;COMPONENT;CUILT_CM;21;7;false;1;2;FORWARD;[0-9];1;false
+0_AR_DNI_CM;COMPONENT;DNI_CM;21;7;false;1;2;FORWARD;[0-9];1;false
