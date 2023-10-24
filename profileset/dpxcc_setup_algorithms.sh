@@ -99,7 +99,7 @@ check_error() {
         if [[ "$IGNORE" == "false" ]];
         then
             exit 1
-        fi     
+        fi
     fi
 }
 
@@ -165,7 +165,7 @@ add_sl_algorithms() {
                      \"maskedValueCase\": \"$maskedValueCase\", \"inputCaseSensitive\": \"$inputCaseSensitive\",
                      \"trimWhitespaceFromInput\": \"$trimWhitespaceFromInput\", \"trimWhitespaceInLookupFile\": \"$trimWhitespaceInLookupFile\"}}"
     fi
-    
+
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
@@ -186,7 +186,7 @@ add_nm_algorithms() {
     local uri="${10}"
     local FUNC='add_nm_algorithms'
     local API='algorithms'
-   
+
     #### NAME FRAMEWORK=25 PLUGIN= 7 - Don't touch. It's working - ####
     if [[ "$frameworkId" == "25" && "$pluginId" == "7" ]]
     then
@@ -197,7 +197,7 @@ add_nm_algorithms() {
                      \"maskedValueCase\": \"$maskedValueCase\", \"filterAccent\": \"$filterAccent\", \"inputCaseSensitive\": \"$inputCaseSensitive\",
                      \"maxLengthOfMaskedName\": \"$maxLengthOfMaskedName\"}}"
     fi
-    
+
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
@@ -216,7 +216,7 @@ add_nmfull_algorithms() {
     local maxNumberFirstNames="${8}"
     local lastNameAlgorithmRef="${9}"
     local firstNameAlgorithmRef="${10}"
-    local maxLengthOfMaskedName="${11}"   
+    local maxLengthOfMaskedName="${11}"
     local ifSingleWordConsiderAsLastName="${12}"
     local uri="${13}"
     local FUNC='add_nmfull_algorithms'
@@ -224,17 +224,16 @@ add_nmfull_algorithms() {
 
     #### FULLNAME FRAMEWORK=5 PLUGIN=7  --- Don't touch. It's working --- ####
     if [[ "$frameworkId" == "5" && "$pluginId" == "7" ]]
-    then                   
+    then
         lastNameAlgRef="{\"name\": \"$lastNameAlgorithmRef\"}"
         firstNameAlgRef="{\"name\": \"$firstNameAlgorithmRef\"}"
-        algorithmExtension="{\"lastNameAtTheEnd\": $lastNameAtTheEnd, \"lastNameSeparators\": [$lastNameSeparators], \"maxNumberFirstNames\": $maxNumberFirstNames, 
+        algorithmExtension="{\"lastNameAtTheEnd\": $lastNameAtTheEnd, \"lastNameSeparators\": [$lastNameSeparators], \"maxNumberFirstNames\": $maxNumberFirstNames,
                              \"lastNameAlgorithmRef\": $lastNameAlgRef, \"firstNameAlgorithmRef\": $firstNameAlgRef"
-                             
         DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
                \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension,
                \"maxLengthOfMaskedName\": $maxLengthOfMaskedName, \"ifSingleWordConsiderAsLastName\": $ifSingleWordConsiderAsLastName}}"
     fi
-    
+
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
@@ -261,7 +260,7 @@ add_pc_algorithms() {
         local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
                      \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension}}"
     fi
-    
+
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
@@ -280,16 +279,16 @@ add_cm_algorithms() {
     local length="${8}"
     local direction="${9}"
     local characterGroups="${10}"
-    local minMaskedPositions="${11}"   
+    local minMaskedPositions="${11}"
     local preserveLeadingZeros="${12}"
     local FUNC='add_cm_algorithms'
     local API='algorithms'
 
     #### FULLNAME FRAMEWORK=21 PLUGIN=7  --- Don't touch. It's working ----- ####
     if [[ "$frameworkId" == "21" && "$pluginId" == "7" ]]
-    then                   
-        preserveRanges="{\"start\": $start, \"length\": $length, \"direction\": \"$direction\"}"       
-        algorithmExtension="{\"caseSensitive\": $caseSensitive, \"preserveRanges\": [$preserveRanges], \"characterGroups\":  [\"$characterGroups\"], 
+    then
+        preserveRanges="{\"start\": $start, \"length\": $length, \"direction\": \"$direction\"}"
+        algorithmExtension="{\"caseSensitive\": $caseSensitive, \"preserveRanges\": [$preserveRanges], \"characterGroups\":  [\"$characterGroups\"],
                              \"minMaskedPositions\": $minMaskedPositions, \"preserveLeadingZeros\": $preserveLeadingZeros"
         DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
                \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}}"
@@ -319,17 +318,16 @@ add_em_algorithms() {
 
     #### FULLNAME FRAMEWORK=22 PLUGIN=7  --- In Progress --- ####
     if [[ "$frameworkId" == "22" && "$pluginId" == "7" ]]
-    then                   
+    then
         nameAlgo="{\"name\": \"$nameAlgorithm\"}"
         domainAlgo="{\"name\": \"$domainAlgorithm\"}"
-        algorithmExtension="{\"nameAction\": \"$nameAction\", \"domainAction\": \"$domainAction\", \"nameAlgorithm\": $nameAlgo, 
+        algorithmExtension="{\"nameAction\": \"$nameAction\", \"domainAction\": \"$domainAction\", \"nameAlgorithm\": $nameAlgo,
                              \"nameLookupFile\": $nameLookupFile, \"domainAlgorithm\": $domainAlgo,
-                             \"domainReplacementString\": $domainReplacementString}"                        
+                             \"domainReplacementString\": $domainReplacementString}"
         DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",
                \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}"
-        echo "$DATA"
     fi
-    
+
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
@@ -425,21 +423,21 @@ then
         then
             upload_files "$fileName" "$fileType"
             add_sl_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$hashMethod" "$maskedValueCase" "$inputCaseSensitive"\
-                              "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"       
+                              "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
 fi
 
 if [[ "$ALGO_FILE" == *"nm_"* ]]
-then  
+then
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId maskedValueCase inputCaseSensitive\
-                         filterAccent maxLengthOfMaskedName fileName fileType                       
+                         filterAccent maxLengthOfMaskedName fileName fileType
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
             upload_files "$fileName" "$fileType"
             add_nm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$maskedValueCase" "$inputCaseSensitive"\
-                              "$filterAccent" "$maxLengthOfMaskedName" "$fileReferenceId"       
+                              "$filterAccent" "$maxLengthOfMaskedName" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
 fi
@@ -448,14 +446,14 @@ if [[ "$ALGO_FILE" == *"nmfull_"* ]]
 then
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId lastNameAtTheEnd \
                          lastNameSeparators maxNumberFirstNames lastNameAlgorithmRef firstNameAlgorithmRef maxLengthOfMaskedName\
-                         ifSingleWordConsiderAsLastName FileName FileType  
+                         ifSingleWordConsiderAsLastName FileName FileType
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
             # upload_files "$fileName" "$fileType" Future Use
             add_nmfull_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$lastNameAtTheEnd"\
                                   "$lastNameSeparators" "$maxNumberFirstNames" "$lastNameAlgorithmRef" "$firstNameAlgorithmRef" "$maxLengthOfMaskedName"\
-                                  "$ifSingleWordConsiderAsLastName" "$lastNameAtTheEnd" "$fileReferenceId"       
+                                  "$ifSingleWordConsiderAsLastName" "$lastNameAtTheEnd" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
 fi
@@ -487,7 +485,7 @@ fi
 if [[ "$ALGO_FILE" == *"em_"* ]]
 then
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId nameAction \
-                         domainAction nameAlgorithm nameLookupFile domainAlgorithm domainReplacementString  
+                         domainAction nameAlgorithm nameLookupFile domainAlgorithm domainReplacementString
     do
         if [[ ! "$algorithmName" =~ "#" ]]
         then
