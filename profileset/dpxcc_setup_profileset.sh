@@ -98,6 +98,17 @@ check_packages() {
     [ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
 }
 
+check_conn() {
+    curl_timeout=$(curl -s -v -m 5 -o /dev/null http://"$MASKING_ENGINE" 2>&1 | grep "timed out")
+    if [[ "$curl_timeout" == *"timed out"* ]];
+    then
+       log "Error: $curl_timeout\n"
+       log "Please verify if the Masking IP Address $MASKING_ENGINE is correct.\n"
+       log "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_ENGINE and check the output to verify communications issues between this machine and the Masking Engine.\n"
+       exit 1
+    fi
+}
+
 # Check if $1 not empty. If so print out message specified in $2 and exit.
 check_response() {
     local RESPONSE="$1"
@@ -301,6 +312,9 @@ check_parm "$ALLPARMS"
 
 # Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
+
+# Check connection
+check_conn
 
 # Login
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
