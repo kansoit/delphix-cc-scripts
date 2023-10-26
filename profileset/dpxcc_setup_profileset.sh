@@ -12,6 +12,7 @@ ALGO_META_FILE='algorithms.csv'
 ALGO_EXE='true'
 IGN_ERROR='false'
 KEEPALIVE=300
+LOG_FILE='dpxcc_setup_profileset.log'
 EXPRESSID_LIST="7,8,11,22,23,49,50"
 # Extra Expression Ids
 # 7 - Creditcard
@@ -29,7 +30,7 @@ show_help() {
     echo "  --profile-name      -f  Profile Name                                          - Required value"
     echo "  --expressions-file  -e  File with Expressions                                 - Default: expressions.csv"
     echo "  --domains-file      -d  File with Domains                                     - Default: domains.csv"
-    echo "  --algorithms-file   -a  Meta File with Algorithms files                       - Default: domains.csv"
+    echo "  --algorithms-file   -a  Meta File with Algorithms files                       - Default: algorithms.csv"
     echo "  --exe-algorithms    -x  Execute Algorithms Setup                              - Default: true"
     echo "  --ignore-errors     -i  Ignore errors while adding domains/express/algorithms - Default: false"
     echo "  --masking-engine    -m  Masking Engine Address                                - Required value"
@@ -50,11 +51,7 @@ die() {
 }
 
 log (){
-    local logMsg="$1"
-    local logDate="[`date '+%d%m%Y %T'`]"
-    local logFileDate="`date '+%d%m%Y_%H%M%S'`"
-    local logFileName="dpxcc_setup_profileset_$logFileDate.log"
-    echo -ne "$logDate $logMsg" | tee -a "$logFileName"
+    echo -ne "[`date '+%d%m%Y %T'`] $1" | tee -a "$LOG_FILE"
 }
 
 add_parms() {
@@ -102,7 +99,7 @@ check_packages() {
 check_response() {
     local RESPONSE="$1"
     if [ -z "$RESPONSE" ]; then
-    	log "No data!"
+    	echo "No data!"
         exit 1
     fi
 }
@@ -116,7 +113,7 @@ check_error() {
     # jq returns a literal null so we have to check against that...
     if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
-        log "Error: Func=$FUNC API=$API Response=$RESPONSE"
+        echo "Error: Func=$FUNC API=$API Response=$RESPONSE"
         if [[ "$IGNORE" == "false" ]];
         then
             exit 1
@@ -301,6 +298,9 @@ check_parm "$ALLPARMS"
 
 # Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
+
+# Delete logfile
+rm "$LOG_FILE" >>/dev/null 2>&1
 
 # Login
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
