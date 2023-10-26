@@ -8,6 +8,8 @@ URL_BASE=""
 ALGO_FILE=""
 IGN_ERROR="false"
 KEEPALIVE=300
+logFileDate="`date '+%d%m%Y_%H%M%S'`"
+logFileName="dpxcc_setup_algorithms_$logFileDate.log"
 
 
 show_help() {
@@ -34,10 +36,8 @@ die() {
 
 log (){
     local logMsg="$1"
-    local logDate="[`date '+%d%m%Y %T'`]"
-    local logFileDate="`date '+%d%m%Y_%H%M%S'`"
-    local logFileName="dpxcc_setup_algorithms_$logFileDate.log"
-    echo -ne "$logDate $logMsg" | tee -a "$logFileName"
+    local logMsgDate="[`date '+%d%m%Y %T'`]"
+    echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
 }
 
 add_parms() {
