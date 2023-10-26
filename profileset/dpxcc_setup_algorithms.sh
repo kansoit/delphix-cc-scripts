@@ -8,7 +8,7 @@ URL_BASE=""
 ALGO_FILE=""
 IGN_ERROR="false"
 KEEPALIVE=300
-LOG_FILE='dpxcc_setup_algorithms.log'
+
 
 show_help() {
     echo "Usage: dpxcc_setup_algorithms.sh [options]"
@@ -33,7 +33,11 @@ die() {
 }
 
 log (){
-    echo -ne "[`date '+%d%m%Y %T'`] $1" | tee -a "$LOG_FILE"
+    local logMsg="$1"
+    local logDate="[`date '+%d%m%Y %T'`]"
+    local logFileDate="`date '+%d%m%Y_%H%M%S'`"
+    local logFileName="dpxcc_setup_algorithms_$logFileDate.log"
+    echo -ne "$logDate $logMsg" | tee -a "$logFileName"
 }
 
 add_parms() {
@@ -81,7 +85,7 @@ check_packages() {
 check_response() {
     local RESPONSE="$1"
     if [ -z "$RESPONSE" ]; then
-    	echo "No data!"
+    	log "No data!\n"
         exit 1
     fi
 }
@@ -95,7 +99,7 @@ check_error() {
     # jq returns a literal null so we have to check against that...
     if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
     then
-        echo "Error: Func=$FUNC API=$API Response=$RESPONSE"
+        log "Error: Func=$FUNC API=$API Response=$RESPONSE\n"
         if [[ "$IGNORE" == "false" ]];
         then
             exit 1
@@ -405,9 +409,6 @@ check_parm "$ALLPARMS"
 
 # Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
-
-# Delete logfile
-rm "$LOG_FILE" >>/dev/null 2>&1
 
 # Login
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
