@@ -15,7 +15,8 @@ LDAP_ENABLED='false'
 NOASK='no'
 NOROLLBACK='no'
 KEEPALIVE=600
-LOG_FILE='dpxcc_config_ldap.log'
+logFileDate="`date '+%d%m%Y_%H%M%S'`"
+logFileName="dpxcc_config_ldap_$logFileDate.log"
 
 
 show_help() {
@@ -45,6 +46,16 @@ die() {
     echo "$(basename $0) ERROR: $*" >&2
     echo "*******************************************************************************"
     exit 1
+}
+
+log (){
+    local logMsg="$1"
+    local logMsgDate="[`date '+%d%m%Y %T'`]"
+    echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
+}
+
+msg_box() {
+    ALLMSG="$ALLMSG""$1"
 }
 
 add_parms() {
@@ -94,7 +105,7 @@ check_packages() {
 check_response() {
     local RESPONSE="$1"
     if [ -z "$RESPONSE" ]; then
-    	echo "No data!"
+    	log "No data!"
         exit 1
     fi
 }
@@ -106,17 +117,9 @@ check_error() {
 
     # jq returns a literal null so we have to check against that...
     if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; then
-        echo "Error: Func=$FUNC API=$API Response=$RESPONSE"
+        log "Error: Func=$FUNC API=$API Response=$RESPONSE"
         exit 1
     fi
-}
-
-log() {
-    echo -ne "[`date '+%d%m%Y %T'`] $1" >> "$LOG_FILE"
-}
-
-msg_box() {
-    ALLMSG="$ALLMSG""$1"
 }
 
 # Login and set the correct $AUTH_HEADER.
@@ -437,9 +440,6 @@ check_parm "$ALLPARMS"
 
 # Update URL
 URL_BASE="http://${MASKING_ENGINE}/masking/api"
-
-# Delete logfile
-rm "$LOG_FILE"
 
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --backtitle "Delphix LDAP Configurator" \
