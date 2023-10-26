@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 
 MASKING_ENGINE=""
