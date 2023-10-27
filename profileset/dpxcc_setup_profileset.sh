@@ -161,8 +161,8 @@ dpxlogin() {
     local FUNC='dpxlogin'
     local API='login'
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
-) || die "Login failed with exit code $?"
+    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
+    ) || die "Login failed with exit code $?"
     check_error "$FUNC" "$API" "$LOGIN_RESPONSE" 
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
@@ -173,7 +173,7 @@ dpxlogin() {
 dpxlogout() {
     local FUNC='dpxlogout'
     local API='logout'
-    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
+    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     log "$MASKING_USERNAME Logged out successfully\n"
 }
 
@@ -190,7 +190,7 @@ add_domains() {
        local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"defaultTokenizationCode\": \"$DFT_TOKEN_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
     fi
 
-    local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE" "$IGN_ERROR"
     ADD_DOMAINS_VALUE=$(echo "$ADD_DOMAINS_RESPONSE" | jq -r '.domainName')
     check_response "$ADD_DOMAINS_VALUE" "$IGN_ERROR"
@@ -206,7 +206,7 @@ add_expressions() {
     local API='profile-expressions'
     local DATA="{ \"domainName\": \"$DOMAIN\", \"expressionName\": \"$EXPRESSNAME\", \"regularExpression\": \"$REGEXP\", \"dataLevelProfiling\": \"$DATALEVEL\"}"
 
-    local ADD_EXPRESS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_EXPRESS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_EXPRESS_RESPONSE" "$IGN_ERROR"
     ADD_EXPRESS_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.expressionName')
     check_response "$ADD_EXPRESS_VALUE" "$IGN_ERROR"
@@ -226,7 +226,7 @@ add_profileset() {
     local FUNC='add_profileset'
     local API='profile-sets'
     local DATA="{ \"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ] }"
-    local ADD_PROFILE_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_PROFILE_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_PROFILE_RESPONSE" "$IGN_ERROR"
     ADD_PROFILE_VALUE=$(echo "$ADD_PROFILE_RESPONSE" | jq -r '.profileSetName')
     check_response "$ADD_PROFILE_VALUE" "$IGN_ERROR"
