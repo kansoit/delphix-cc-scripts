@@ -34,12 +34,13 @@ show_help() {
     echo "  --algorithms-file   -a  Meta File with Algorithms files                       - Default: algorithms.csv"
     echo "  --exe-algorithms    -x  Execute Algorithms Setup                              - Default: true"
     echo "  --ignore-errors     -i  Ignore errors while adding domains/express/algorithms - Default: false"
+    echo "  --log-file          -o  Log file name                                         - Default Value: Current date_time.log"
     echo "  --masking-engine    -m  Masking Engine Address                                - Required value"
     echo "  --masking-username  -u  Masking Engine User Name                              - Required value"
     echo "  --masking-pwd       -p  Masking Engine Password                               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -e expressions.csv -d domains.csv -a algorithms.csv -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
     exit 1
 }
 
@@ -109,12 +110,29 @@ check_conn() {
     fi
 }
 
+check_file() {
+    local csvFile="$1"
+    local IGNORE="$2"
+
+    if [ ! -f "$csvFile" ] && [ "$IGNORE" != "true" ]; then
+        echo "Input file $csvFile is missing"
+        exit 1
+    fi
+}
+
 # Check if $1 not empty. If so print out message specified in $2 and exit.
 check_response() {
     local RESPONSE="$1"
-    if [ -z "$RESPONSE" ]; then
-    	log "No data!"
-        exit 1
+    local IGNORE="$2"
+
+    if [ -z "$RESPONSE" ]; 
+    then
+       log "Check Response! No data\n"
+       if [[ "$IGNORE" == "false" ]];   
+       then
+          dpxlogout
+          exit 1
+       fi
     fi
 }
 
@@ -125,13 +143,14 @@ check_error() {
     local IGNORE="$4"
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
+    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
     then
-        log "Error: Func=$FUNC API=$API Response=$RESPONSE"
+        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         if [[ "$IGNORE" == "false" ]];
         then
+            dpxlogout
             exit 1
-        fi     
+        fi
     fi
 }
 
@@ -174,7 +193,7 @@ add_domains() {
     local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE" "$IGN_ERROR"
     ADD_DOMAINS_VALUE=$(echo "$ADD_DOMAINS_RESPONSE" | jq -r '.domainName')
-    check_response "$ADD_DOMAINS_VALUE"
+    check_response "$ADD_DOMAINS_VALUE" "$IGN_ERROR"
     log "Domain: $ADD_DOMAINS_VALUE added.\n"
 }
 
@@ -190,7 +209,7 @@ add_expressions() {
     local ADD_EXPRESS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_EXPRESS_RESPONSE" "$IGN_ERROR"
     ADD_EXPRESS_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.expressionName')
-    check_response "$ADD_EXPRESS_VALUE"
+    check_response "$ADD_EXPRESS_VALUE" "$IGN_ERROR"
     log "Expression: $ADD_EXPRESS_VALUE added.\n"
 
     # Return EXPRESSID_LIST
@@ -210,7 +229,7 @@ add_profileset() {
     local ADD_PROFILE_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_PROFILE_RESPONSE" "$IGN_ERROR"
     ADD_PROFILE_VALUE=$(echo "$ADD_PROFILE_RESPONSE" | jq -r '.profileSetName')
-    check_response "$ADD_PROFILE_VALUE"
+    check_response "$ADD_PROFILE_VALUE" "$IGN_ERROR"
     log "ProfileSet: $ADD_PROFILE_VALUE added.\n"
     log "Expressions ids ${EXPRESSID_LIST} added to ${PROFILE_NAME}\n"
 }
@@ -243,6 +262,9 @@ do
         --ignore-errors)
             args="${args}-i "
             ;;        
+        --log-file)
+            args="${args}-o "
+            ;;        
         --masking-engine)
             args="${args}-m "
             ;;
@@ -262,7 +284,7 @@ done
 
 eval set -- $args
 
-while getopts ":h:f:e:d:a:x:i:m:u:p:" PARAMETERS; do
+while getopts ":h:f:e:d:a:x:i:o:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
@@ -288,6 +310,10 @@ while getopts ":h:f:e:d:a:x:i:m:u:p:" PARAMETERS; do
         	;;
         i)
         	IGN_ERROR=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        o)
+        	logFileName=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -316,27 +342,30 @@ URL_BASE="http://${MASKING_ENGINE}/masking/api"
 # Check connection
 check_conn
 
-# Login
-dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+# Check csv file exists
+check_file "$ALGO_META_FILE" "$IGN_ERROR"
+check_file "$DOMAINS_FILE" "$IGN_ERROR"
+check_file "$EXPRESS_FILE" "$IGN_ERROR"
 
 # Create Algorithms
 if [[ "$ALGO_EXE" == "true" ]];
 then
-    log "Creating algorithms: \n"
     while IFS=\; read -r fileName
     do
-        if [[ ! "$fileName" =~ "#" ]]
+        if [[ ! "$fileName" =~ "#" ]];
         then
-		   ./dpxcc_setup_algorithms.sh -a "$fileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"        
+		   ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"        
         fi
     done < "$ALGO_META_FILE"
 fi
+
+dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 # Create Domains
 log "Creating domains: \n"
 while IFS=\; read -r DOMAIN_NAME DFT_ALGO_CODE DFT_TOKEN_CODE
 do
-    if [[ ! "$DOMAIN_NAME" =~ "#" ]]
+    if [[ ! "$DOMAIN_NAME" =~ "#" ]];
     then
         add_domains "$DOMAIN_NAME" "$DFT_ALGO_CODE" "$DFT_TOKEN_CODE"
     fi
@@ -346,14 +375,14 @@ done < "$DOMAINS_FILE"
 log "Creating expressions: \n"
 while IFS=\; read -r EXPRESS_NAME DOMAIN DATALEVEL REGEXP
 do
-    if [[ ! "$EXPRESS_NAME" =~ "#" ]]
+    if [[ ! "$EXPRESS_NAME" =~ "#" ]];
     then
         add_expressions "$DOMAIN" "$EXPRESS_NAME" "$REGEXP" "$DATALEVEL"
     fi
 done < "$EXPRESS_FILE"
 
 # Add ProfileSet
+log "Creating Profileset: \n"
 add_profileset "$PROFILE_NAME" "$EXPRESSID_LIST"
 
-# Logout
 dpxlogout
