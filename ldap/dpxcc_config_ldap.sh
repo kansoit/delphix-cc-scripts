@@ -29,7 +29,7 @@ show_help() {
     echo "  --ldap-tls        -l	Enable LDAP TLS (true/false) - Default: false"
     echo "  --ldap-filter     -f	LDAP Filter                  - Default: (&(objectClass=person)(sAMAccountName=?))"
     echo "  --ldap-enabled    -e	Enable LDAP (true/false)     - Default: false"
-    echo "  --log-file        -o    Log file name                - Default Value: Current date_time.log"
+    echo "  --log-file        -o	Log file name                - Default Value: Current date_time.log"
     echo "  --masking-engine  -m	Masking Engine Address       - Required value"
     echo "  --masking-user    -u	Masking Engine User Name     - Required value"
     echo "  --masking-pwd     -p	Masking Engine Password      - Required value"
