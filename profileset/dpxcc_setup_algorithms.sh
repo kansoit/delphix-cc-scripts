@@ -144,7 +144,7 @@ dpxlogin() {
     local FUNC='dpxlogin'
     local API='login'
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
+    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
 ) || die "Login failed with exit code $?"
     check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
@@ -156,7 +156,7 @@ dpxlogin() {
 dpxlogout() {
     local FUNC='dpxlogout'
     local API='logout'
-    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
+    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
     log "$MASKING_USERNAME Logged out successfully\n"
 }
 
@@ -166,7 +166,7 @@ upload_files() {
     local FORM="file=@$FILE_NAME;type=$FILE_TYPE"
     local FUNC='upload_files'
     local API='file-uploads?permanent=false'
-    local FILE_UPLOADS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type:  multipart/form-data' --keepalive-time "$KEEPALIVE" --form "$FORM" -s "$URL_BASE/$API")
+    local FILE_UPLOADS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type:  multipart/form-data' -x "" --keepalive-time "$KEEPALIVE" --form "$FORM" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$FILE_UPLOADS_RESPONSE" "$IGN_ERROR"
     FILE_UPLOADS_VALUE=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.filename')
     check_response "$FILE_UPLOADS_VALUE" "$IGN_ERROR"
@@ -200,7 +200,7 @@ add_sl_algorithms() {
                      \"trimWhitespaceFromInput\": \"$trimWhitespaceFromInput\", \"trimWhitespaceInLookupFile\": \"$trimWhitespaceInLookupFile\"}}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
@@ -232,7 +232,7 @@ add_nm_algorithms() {
                      \"maxLengthOfMaskedName\": \"$maxLengthOfMaskedName\"}}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
@@ -268,7 +268,7 @@ add_nmfull_algorithms() {
                \"maxLengthOfMaskedName\": $maxLengthOfMaskedName, \"ifSingleWordConsiderAsLastName\": $ifSingleWordConsiderAsLastName}}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
@@ -295,7 +295,7 @@ add_pc_algorithms() {
                      \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension}}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
@@ -328,7 +328,7 @@ add_cm_algorithms() {
                \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
@@ -362,7 +362,7 @@ add_em_algorithms() {
                \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}"
     fi
 
-    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
