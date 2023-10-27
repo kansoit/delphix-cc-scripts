@@ -22,18 +22,19 @@ logFileName="dpxcc_config_ldap_$logFileDate.log"
 show_help() {
     echo "Usage: dpcc_config_ldap.sh [options]"
     echo "Options:"
-    echo "  --ldap-host       -s 	LDAP Server IP Address - Required value"
-    echo "  --ldap-port       -t	LDAP Port Number - Default: 389"
-    echo "  --ldap-basedn     -b	BaseDN - Default: DC=candy,DC=com,DC=ar"
-    echo "  --ldap-domain     -d	NETBIOS Domain Name - Default: CANDY"
+    echo "  --ldap-host       -s 	LDAP Server IP Address       - Required value"
+    echo "  --ldap-port       -t	LDAP Port Number             - Default: 389"
+    echo "  --ldap-basedn     -b	BaseDN                       - Default: DC=candy,DC=com,DC=ar"
+    echo "  --ldap-domain     -d	NETBIOS Domain Name          - Default: CANDY"
     echo "  --ldap-tls        -l	Enable LDAP TLS (true/false) - Default: false"
-    echo "  --ldap-filter     -f	LDAP Filter - Default: (&(objectClass=person)(sAMAccountName=?))"
-    echo "  --ldap-enabled    -e	Enable LDAP (true/false) - Default: false"
-    echo "  --masking-engine  -m	Masking Engine Address - Required value"
-    echo "  --masking-user    -u	Masking Engine User Name - Required value"
-    echo "  --masking-pwd     -p	Masking Engine Password - Required value"
-    echo "  --no-ask          -a	No Ask dialog - Default: no"
-    echo "  --no-rollback     -r	No Rollback dialog - Default: no"
+    echo "  --ldap-filter     -f	LDAP Filter                  - Default: (&(objectClass=person)(sAMAccountName=?))"
+    echo "  --ldap-enabled    -e	Enable LDAP (true/false)     - Default: false"
+    echo "  --log-file        -o    Log file name                - Default Value: Current date_time.log"
+    echo "  --masking-engine  -m	Masking Engine Address       - Required value"
+    echo "  --masking-user    -u	Masking Engine User Name     - Required value"
+    echo "  --masking-pwd     -p	Masking Engine Password      - Required value"
+    echo "  --no-ask          -a	No Ask dialog                - Default: no"
+    echo "  --no-rollback     -r	No Rollback dialog           - Default: no"
     echo "  --help            -h	Show this help"
     echo "Example:"
     echo "dpxcc_config_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
@@ -116,7 +117,7 @@ check_conn() {
 check_response() {
     local RESPONSE="$1"
     if [ -z "$RESPONSE" ]; then
-    	log "No data!"
+    	log "Check Response! No data\n"
         exit 1
     fi
 }
@@ -128,7 +129,7 @@ check_error() {
 
     # jq returns a literal null so we have to check against that...
     if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; then
-        log "Error: Func=$FUNC API=$API Response=$RESPONSE"
+        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         exit 1
     fi
 }
@@ -361,6 +362,9 @@ do
         --ldap-filter)
             args="${args}-f "
             ;;
+        --log-file)
+            args="${args}-o "
+            ;;
         --ldap-status)
             args="${args}-e "
             ;;
@@ -389,7 +393,7 @@ done
 
 eval set -- $args
 
-while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r:" PARAMETERS; do
+while getopts ":h:s:t:b:d:l:f:e:o:m:u:p:a:r:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
@@ -419,6 +423,10 @@ while getopts ":h:s:t:b:d:l:f:e:m:u:p:a:r:" PARAMETERS; do
         	;;
         e)
         	LDAP_STATUS=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        o)
+        	logFileName=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)

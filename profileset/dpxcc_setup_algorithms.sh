@@ -17,6 +17,7 @@ show_help() {
     echo "Options:"
     echo "  --algorithms-file   -a  File containing Algorithms            - Required value"
     echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default Value: false"
+    echo "  --log-file          -o  Log file name                         - Default Value: Current date_time.log"
     echo "  --masking-engine    -m  Masking Engine Address                - Required value"
     echo "  --masking-username  -u  Masking Engine User Name              - Required value"
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
@@ -92,12 +93,29 @@ check_conn() {
     fi
 }
 
+check_file() {
+    local csvFile="$1"
+    local IGNORE="$2"
+
+    if [ ! -f "$csvFile" ] && [ "$IGNORE" != "true" ]; then
+        echo "Input file $csvFile is missing"
+        exit 1
+    fi
+}
+
 # Check if $1 not empty. If so print out message specified in $2 and exit.
 check_response() {
     local RESPONSE="$1"
-    if [ -z "$RESPONSE" ]; then
-    	log "No data!\n"
-        exit 1
+    local IGNORE="$2"
+
+    if [ -z "$RESPONSE" ]; 
+    then
+       log "Check Response! No data\n"
+       if [[ "$IGNORE" == "false" ]];   
+       then
+          dpxlogout
+          exit 1
+       fi
     fi
 }
 
@@ -110,9 +128,10 @@ check_error() {
     # jq returns a literal null so we have to check against that...
     if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
     then
-        log "Error: Func=$FUNC API=$API Response=$RESPONSE\n"
+        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         if [[ "$IGNORE" == "false" ]];
         then
+            dpxlogout
             exit 1
         fi
     fi
@@ -150,9 +169,9 @@ upload_files() {
     local FILE_UPLOADS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type:  multipart/form-data' --keepalive-time "$KEEPALIVE" --form "$FORM" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$FILE_UPLOADS_RESPONSE" "$IGN_ERROR"
     FILE_UPLOADS_VALUE=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.filename')
-    check_response "$FILE_UPLOADS_VALUE"
+    check_response "$FILE_UPLOADS_VALUE" "$IGN_ERROR"
     fileReferenceId=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.fileReferenceId')
-    log "File: $FILE_UPLOADS_VALUE added with ID: $fileReferenceId\n"
+    log "File: $FILE_UPLOADS_VALUE uploaded - ID: $fileReferenceId\n"
 }
 
 add_sl_algorithms() {
@@ -171,7 +190,7 @@ add_sl_algorithms() {
     local API='algorithms'
 
     #### SECURE LOOKUP FRAMEWORK=26 PLUGIN= 7 - Don't touch. It's working - ####
-    if [[ "$frameworkId" == "26" && "$pluginId" == "7" ]]
+    if [[ "$frameworkId" == "26" && "$pluginId" == "7" ]];
     then
         local lookupFile="{\"uri\": \"$uri\"}"
         local algorithmExtension="{\"hashMethod\": \"$hashMethod\", \"lookupFile\": $lookupFile"
@@ -184,8 +203,8 @@ add_sl_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
+    log "Algorithm: $ADD_ALGO_VALUE $TEST.\n"
 }
 
 add_nm_algorithms() {
@@ -203,7 +222,7 @@ add_nm_algorithms() {
     local API='algorithms'
 
     #### NAME FRAMEWORK=25 PLUGIN= 7 - Don't touch. It's working - ####
-    if [[ "$frameworkId" == "25" && "$pluginId" == "7" ]]
+    if [[ "$frameworkId" == "25" && "$pluginId" == "7" ]];
     then
         local lookupFile="{\"uri\": \"$uri\"}"
         local algorithmExtension="{\"lookupFile\": $lookupFile"
@@ -216,7 +235,7 @@ add_nm_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
@@ -238,7 +257,7 @@ add_nmfull_algorithms() {
     local API='algorithms'
 
     #### FULLNAME FRAMEWORK=5 PLUGIN=7  --- Don't touch. It's working --- ####
-    if [[ "$frameworkId" == "5" && "$pluginId" == "7" ]]
+    if [[ "$frameworkId" == "5" && "$pluginId" == "7" ]];
     then
         lastNameAlgRef="{\"name\": \"$lastNameAlgorithmRef\"}"
         firstNameAlgRef="{\"name\": \"$firstNameAlgorithmRef\"}"
@@ -252,7 +271,7 @@ add_nmfull_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
@@ -268,7 +287,7 @@ add_pc_algorithms() {
     local API='algorithms'
 
     #### FULLNAME FRAMEWORK=10 PLUGIN=7  --- Don't touch. It's working ----- ####
-    if [[ "$frameworkId" == "10" && "$pluginId" == "7" ]]
+    if [[ "$frameworkId" == "10" && "$pluginId" == "7" ]];
     then
         local lookupFile="{\"uri\": \"$uri\"}"
         local algorithmExtension="{\"preserve\": \"$preserve\", \"minMaskedPositions\": $minMaskedPositions"
@@ -279,7 +298,7 @@ add_pc_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
@@ -300,7 +319,7 @@ add_cm_algorithms() {
     local API='algorithms'
 
     #### FULLNAME FRAMEWORK=21 PLUGIN=7  --- Don't touch. It's working ----- ####
-    if [[ "$frameworkId" == "21" && "$pluginId" == "7" ]]
+    if [[ "$frameworkId" == "21" && "$pluginId" == "7" ]];
     then
         preserveRanges="{\"start\": $start, \"length\": $length, \"direction\": \"$direction\"}"
         algorithmExtension="{\"caseSensitive\": $caseSensitive, \"preserveRanges\": [$preserveRanges], \"characterGroups\":  [\"$characterGroups\"],
@@ -312,7 +331,7 @@ add_cm_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
@@ -331,8 +350,8 @@ add_em_algorithms() {
     local FUNC='add_em_algorithms'
     local API='algorithms'
 
-    #### FULLNAME FRAMEWORK=22 PLUGIN=7  --- In Progress --- ####
-    if [[ "$frameworkId" == "22" && "$pluginId" == "7" ]]
+    #### FULLNAME FRAMEWORK=22 PLUGIN=7  --- Don't touch. It's working --- ####
+    if [[ "$frameworkId" == "22" && "$pluginId" == "7" ]];
     then
         nameAlgo="{\"name\": \"$nameAlgorithm\"}"
         domainAlgo="{\"name\": \"$domainAlgorithm\"}"
@@ -346,7 +365,7 @@ add_em_algorithms() {
     local ADD_ALGO_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE"
+    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
     log "Algorithm: $ADD_ALGO_VALUE added.\n"
 }
 
@@ -367,6 +386,9 @@ do
         --ignore-errors)
             args="${args}-i "
             ;;
+        --log-file)
+            args="${args}-o "
+            ;;
         --masking-engine)
             args="${args}-m "
             ;;
@@ -386,7 +408,7 @@ done
 
 eval set -- $args
 
-while getopts ":h:a:i:m:u:p:" PARAMETERS; do
+while getopts ":h:a:i:o:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
@@ -396,6 +418,10 @@ while getopts ":h:a:i:m:u:p:" PARAMETERS; do
         	;;
         i)
         	IGN_ERROR=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        o)
+        	logFileName=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -424,91 +450,109 @@ URL_BASE="http://${MASKING_ENGINE}/masking/api"
 # Check connection
 check_conn
 
-# Login
-dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-
-log "Creating Algorithms: \n"
-
-if [[ "$ALGO_FILE" == *"sl_"* ]]
-then
+if [[ "$ALGO_FILE" == *"sl_"* ]];
+then 
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    log "Creating Algorithms with Secure Lookup Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId hashMethod maskedValueCase inputCaseSensitive\
                          trimWhitespaceFromInput trimWhitespaceInLookupFile fileName fileType
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
-        then
+        if [[ ! "$algorithmName" =~ "#" ]];
+        then 
             upload_files "$fileName" "$fileType"
             add_sl_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$hashMethod" "$maskedValueCase" "$inputCaseSensitive"\
                               "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
+    dpxlogout
 fi
 
-if [[ "$ALGO_FILE" == *"nm_"* ]]
+if [[ "$ALGO_FILE" == *"nm_"* ]];
 then
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    log "Creating Algorithms with Name Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId maskedValueCase inputCaseSensitive\
                          filterAccent maxLengthOfMaskedName fileName fileType
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
+        if [[ ! "$algorithmName" =~ "#" ]];
         then
             upload_files "$fileName" "$fileType"
             add_nm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$maskedValueCase" "$inputCaseSensitive"\
                               "$filterAccent" "$maxLengthOfMaskedName" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
+    dpxlogout
 fi
 
-if [[ "$ALGO_FILE" == *"nmfull_"* ]]
+if [[ "$ALGO_FILE" == *"nmfull_"* ]];
 then
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    log "Creating Algorithms with Full Name Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId lastNameAtTheEnd \
                          lastNameSeparators maxNumberFirstNames lastNameAlgorithmRef firstNameAlgorithmRef maxLengthOfMaskedName\
                          ifSingleWordConsiderAsLastName FileName FileType
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
+        if [[ ! "$algorithmName" =~ "#" ]];
         then
-            # upload_files "$fileName" "$fileType" Future Use
             add_nmfull_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$lastNameAtTheEnd"\
                                   "$lastNameSeparators" "$maxNumberFirstNames" "$lastNameAlgorithmRef" "$firstNameAlgorithmRef" "$maxLengthOfMaskedName"\
                                   "$ifSingleWordConsiderAsLastName" "$lastNameAtTheEnd" "$fileReferenceId"
         fi
     done < "$ALGO_FILE"
+    dpxlogout
 fi
 
-if [[ "$ALGO_FILE" == *"pc_"* ]]
+if [[ "$ALGO_FILE" == *"pc_"* ]];
 then
+    # Check csv file exists
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    log "Creating Algorithms with Payment Card Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId preserve minMaskedPositions
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
+        if [[ ! "$algorithmName" =~ "#" ]];
         then
             add_pc_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$preserve" "$minMaskedPositions"
         fi
     done < "$ALGO_FILE"
+    dpxlogout
 fi
 
-if [[ "$ALGO_FILE" == *"cm_"* ]]
+if [[ "$ALGO_FILE" == *"cm_"* ]];
 then
+    # Check csv file exists
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    log "Creating Algorithms with Character Mapping Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId caseSensitive \
                          start length direction characterGroups minMaskedPositions preserveLeadingZeros
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
+        if [[ ! "$algorithmName" =~ "#" ]];
         then
             add_cm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$caseSensitive"\
                                   "$start" "$length" "$direction" "$characterGroups" "$minMaskedPositions" "$preserveLeadingZeros"
         fi
     done < "$ALGO_FILE"
+    dpxlogout
 fi
 
-if [[ "$ALGO_FILE" == *"em_"* ]]
+if [[ "$ALGO_FILE" == *"em_"* ]];
 then
+    # Check csv file exists
+    check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+    log "Creating Algorithms with Email Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId nameAction \
                          domainAction nameAlgorithm nameLookupFile domainAlgorithm domainReplacementString
     do
-        if [[ ! "$algorithmName" =~ "#" ]]
+        if [[ ! "$algorithmName" =~ "#" ]];
         then
             add_em_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$nameAction"\
                               "$domainAction" "$nameAlgorithm" "$nameLookupFile" "$domainAlgorithm" "$domainReplacementString"
         fi
     done < "$ALGO_FILE"
+    dpxlogout    
 fi
-
-# Logout
-dpxlogout
