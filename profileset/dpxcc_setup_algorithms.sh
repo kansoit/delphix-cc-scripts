@@ -83,7 +83,7 @@ check_packages() {
 }
 
 check_conn() {
-    curl_timeout=$(curl -s -v -m 5 -o /dev/null http://"$MASKING_ENGINE" 2>&1 | grep "timed out")
+    curl_timeout=$(curl -s -v -m 5 -x "" -o /dev/null http://"$MASKING_ENGINE" 2>&1 | grep "timed out")
     if [[ "$curl_timeout" == *"timed out"* ]];
     then
        log "Error: $curl_timeout\n"
