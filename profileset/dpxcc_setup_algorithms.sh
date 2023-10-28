@@ -470,8 +470,8 @@ fi
 
 if [[ "$ALGO_FILE" == *"nm_"* ]];
 then
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
     check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
     log "Creating Algorithms with Name Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId maskedValueCase inputCaseSensitive\
                          filterAccent maxLengthOfMaskedName fileName fileType
@@ -488,8 +488,8 @@ fi
 
 if [[ "$ALGO_FILE" == *"nmfull_"* ]];
 then
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
     check_file "$ALGO_FILE" "$IGN_ERROR"
+    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
     log "Creating Algorithms with Full Name Framework\n"
     while IFS=\; read -r algorithmName algorithmType description frameworkId pluginId lastNameAtTheEnd \
                          lastNameSeparators maxNumberFirstNames lastNameAlgorithmRef firstNameAlgorithmRef maxLengthOfMaskedName\
