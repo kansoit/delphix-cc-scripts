@@ -37,7 +37,7 @@ show_help() {
     echo "  --no-rollback     -r	No Rollback dialog           - Default: no"
     echo "  --help            -h	Show this help"
     echo "Example:"
-    echo "dpxcc_config_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_config_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
@@ -458,7 +458,7 @@ done
 check_parm "$ALLPARMS"
 
 # Update URL
-URL_BASE="http://${MASKING_ENGINE}/masking/api"
+URL_BASE="http://${MASKING_ENGINE}/masking/api/v5.1.22"
 
 # Check connection
 check_conn
