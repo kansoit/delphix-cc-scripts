@@ -40,7 +40,7 @@ show_help() {
     echo "  --masking-pwd       -p  Masking Engine Password                               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
@@ -125,10 +125,10 @@ check_response() {
     local RESPONSE="$1"
     local IGNORE="$2"
 
-    if [ -z "$RESPONSE" ]; 
+    if [ -z "$RESPONSE" ];
     then
        log "Check Response! No data\n"
-       if [[ "$IGNORE" == "false" ]];   
+       if [[ "$IGNORE" == "false" ]];
        then
           dpxlogout
           exit 1
@@ -143,7 +143,7 @@ check_error() {
     local IGNORE="$4"
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
+    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
         log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         if [[ "$IGNORE" == "false" ]];
@@ -163,7 +163,7 @@ dpxlogin() {
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
     LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
     ) || die "Login failed with exit code $?"
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE" 
+    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
     log "$MASKING_USERNAME logged in successfully\n"
@@ -255,16 +255,16 @@ do
             ;;
         --algorithms-file)
             args="${args}-a "
-            ;;        
+            ;;
         --exe-algorithms)
             args="${args}-x "
-            ;;        
+            ;;
         --ignore-errors)
             args="${args}-i "
-            ;;        
+            ;;
         --log-file)
             args="${args}-o "
-            ;;        
+            ;;
         --masking-engine)
             args="${args}-m "
             ;;
@@ -337,7 +337,7 @@ done
 check_parm "$ALLPARMS"
 
 # Update URL
-URL_BASE="http://${MASKING_ENGINE}/masking/api"
+URL_BASE="http://${MASKING_ENGINE}/masking/api/v5.1.22"
 
 # Check connection
 check_conn
@@ -354,7 +354,7 @@ then
     do
         if [[ ! "$fileName" =~ "#" ]];
         then
-		   ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"        
+	    ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"
         fi
     done < "$ALGO_META_FILE"
 fi

@@ -23,7 +23,7 @@ show_help() {
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>" 
+    echo "dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
@@ -108,10 +108,10 @@ check_response() {
     local RESPONSE="$1"
     local IGNORE="$2"
 
-    if [ -z "$RESPONSE" ]; 
+    if [ -z "$RESPONSE" ];
     then
        log "Check Response! No data\n"
-       if [[ "$IGNORE" == "false" ]];   
+       if [[ "$IGNORE" == "false" ]];
        then
           dpxlogout
           exit 1
@@ -126,7 +126,7 @@ check_error() {
     local IGNORE="$4"
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ]; 
+    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
         log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         if [[ "$IGNORE" == "false" ]];
@@ -184,7 +184,7 @@ add_sl_algorithms() {
     local maskedValueCase="$7"
     local inputCaseSensitive="$8"
     local trimWhitespaceFromInput="${9}"
-    local trimWhitespaceInLookupFile="${10}" 
+    local trimWhitespaceInLookupFile="${10}"
     local uri="${11}"
     local FUNC='add_sl_algorithms'
     local API='algorithms'
@@ -445,13 +445,13 @@ done
 check_parm "$ALLPARMS"
 
 # Update URL
-URL_BASE="http://${MASKING_ENGINE}/masking/api"
+URL_BASE="http://${MASKING_ENGINE}/masking/api/v5.1.22"
 
 # Check connection
 check_conn
 
 if [[ "$ALGO_FILE" == *"sl_"* ]];
-then 
+then
     check_file "$ALGO_FILE" "$IGN_ERROR"
     dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
     log "Creating Algorithms with Secure Lookup Framework\n"
@@ -459,7 +459,7 @@ then
                          trimWhitespaceFromInput trimWhitespaceInLookupFile fileName fileType
     do
         if [[ ! "$algorithmName" =~ "#" ]];
-        then 
+        then
             upload_files "$fileName" "$fileType"
             add_sl_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$hashMethod" "$maskedValueCase" "$inputCaseSensitive"\
                               "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"
@@ -554,5 +554,5 @@ then
                               "$domainAction" "$nameAlgorithm" "$nameLookupFile" "$domainAlgorithm" "$domainReplacementString"
         fi
     done < "$ALGO_FILE"
-    dpxlogout    
+    dpxlogout
 fi
