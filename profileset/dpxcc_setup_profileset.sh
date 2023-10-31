@@ -354,7 +354,7 @@ then
     do
         if [[ ! "$fileName" =~ "#" ]];
         then
-	    ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"
+           ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"
         fi
     done < "$ALGO_META_FILE"
 fi
