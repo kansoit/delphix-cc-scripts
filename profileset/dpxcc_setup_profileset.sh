@@ -23,24 +23,28 @@ EXPRESSID_LIST="7,8,11,22,23,49,50"
 # 50 - Ip Address
 logFileDate="`date '+%d%m%Y_%H%M%S'`"
 logFileName="dpxcc_setup_profileset_$logFileDate.log"
+PROXY_BYPASS=true
+SECURE_CONN=false
 
 
 show_help() {
     echo "Usage: dpxcc_setup_profileset.sh [options]"
     echo "Options:"
-    echo "  --profile-name      -f  Profile Name                                          - Required value"
-    echo "  --expressions-file  -e  File with Expressions                                 - Default: expressions.csv"
-    echo "  --domains-file      -d  File with Domains                                     - Default: domains.csv"
-    echo "  --algorithms-file   -a  Meta File with Algorithms files                       - Default: algorithms.csv"
-    echo "  --exe-algorithms    -x  Execute Algorithms Setup                              - Default: true"
-    echo "  --ignore-errors     -i  Ignore errors while adding domains/express/algorithms - Default: false"
-    echo "  --log-file          -o  Log file name                                         - Default Value: Current date_time.log"
-    echo "  --masking-engine    -m  Masking Engine Address                                - Required value"
-    echo "  --masking-username  -u  Masking Engine User Name                              - Required value"
-    echo "  --masking-pwd       -p  Masking Engine Password                               - Required value"
+    echo "  --profile-name      -f  Profile Name                    - Required value"
+    echo "  --expressions-file  -e  File with Expressions           - Default: expressions.csv"
+    echo "  --domains-file      -d  File with Domains               - Default: domains.csv"
+    echo "  --algorithms-file   -a  Meta File with Algorithms files - Default: algorithms.csv"
+    echo "  --run-algorithms    -r  Run Algorithms Setup            - Default: true"
+    echo "  --ignore-errors     -i  Ignore errors                   - Default: false"
+    echo "  --log-file          -o  Log file name                   - Default Value: Current date_time.log"
+    echo "  --proxy-bypass      -x  Proxy ByPass                    - Default Value: true"
+    echo "  --http-secure       -k  (http/https)                    - Default Value: false"
+    echo "  --masking-engine    -m  Masking Engine Address          - Required value"
+    echo "  --masking-username  -u  Masking Engine User Name        - Required value"
+    echo "  --masking-pwd       -p  Masking Engine Password         - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -x true -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
+    echo "dpxcc_setup_profileset.sh -f <PROFILE NAME> -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
@@ -100,12 +104,46 @@ check_packages() {
 }
 
 check_conn() {
-    curl_timeout=$(curl -s -v -m 5 -x "" -o /dev/null http://"$MASKING_ENGINE" 2>&1 | grep "timed out")
-    if [[ "$curl_timeout" == *"timed out"* ]];
+    local MASKING_IP="$1"
+    local PROXY_BYPASS="$2"
+    local SECURE_CONN="$3"
+
+    local curl_command="curl -s -v -m 5"
+
+    if [ "$SECURE_CONN" = true ]; then
+        local URL="https://$MASKING_IP"
+    else
+        local URL="http://$MASKING_IP"
+    fi
+
+    if [ "$PROXY_BYPASS" = true ]; then
+        curl_command="$curl_command -x \"\""
+    fi
+
+    local curl_command="$curl_command -o /dev/null $URL 2>&1"
+    local curlResponse=$(eval "$curl_command")
+
+    if [[ "$curlResponse" == *"timed out"* ]];
     then
-       log "Error: $curl_timeout\n"
-       log "Please verify if the Masking IP Address $MASKING_ENGINE is correct.\n"
-       log "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_ENGINE and check the output to verify communications issues between this machine and the Masking Engine.\n"
+       curlError=$(echo "$curlResponse" | grep -o "Connection timed out")
+       echo "Error: $curlError Please verify if the Masking IP Address $MASKING_IP is correct or bypass proxy if needed with -x true option."
+       echo "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
+
+    if [[ "$curlResponse" == *"Connection refused"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "Connection refused")
+       echo "Error: $curlError - Please confirm the desired level of security for the connection (http/https) and ensure that $MASKING_IP is not blocked"
+       echo "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
+
+    if [[ "$curlResponse" == *"307 Temporary Redirect"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "307 Temporary Redirect")
+       echo "Error: $curlError - Please verify if a secure connection (https) to the Masking Engine is required."
+       echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
        exit 1
     fi
 }
@@ -154,15 +192,72 @@ check_error() {
     fi
 }
 
+build_curl() {
+    local URL_BASE="$1"
+    local API="$2"
+    local METHOD="$3"
+    local AUTH="$4"
+    local CONTENT_TYPE="$5"
+    local KEEPALIVE="$6"
+    local PROXY_BYPASS="$7"
+    local SECURE_CONN="$8"
+    local FORM="$9"
+    local DATA="${10}"
+
+    if [ "$SECURE_CONN" = true ]; then
+        URL_BASE="https://$URL_BASE"
+    else
+        URL_BASE="http://$URL_BASE"
+    fi
+
+    curl_command="curl -X $METHOD"
+
+    if [ -n "$AUTH" ]; then
+        curl_command="$curl_command -H ''\"$AUTH\"''"
+    fi
+
+    curl_command="$curl_command -H 'Content-Type: $CONTENT_TYPE'"
+
+    if [ "$PROXY_BYPASS" = true ]; then
+        curl_command="$curl_command -x \"\""
+    fi
+
+    curl_command="$curl_command --keepalive-time $KEEPALIVE"
+
+    if [ -n "$FORM" ]; then
+        curl_command="$curl_command -F '$FORM'"
+    fi
+
+    if [ -n "$DATA" ]; then
+        curl_command="$curl_command --data '$DATA'"
+    fi
+
+    if [ "$SECURE_CONN" = true ]; then
+        curl_command="$curl_command -k "
+    fi
+
+    curl_command="$curl_command -s $URL_BASE/$API"
+    log "$curl_command\n"
+}
+
 # Login and set the correct $AUTH_HEADER.
 dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
+
     local FUNC='dpxlogin'
+    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='login'
+    local METHOD="POST"
+    local AUTH=""
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
-    ) || die "Login failed with exit code $?"
+
+    log "Logging in with $USERNAME ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local LOGIN_RESPONSE=$(eval "$curl_command") || die "Login failed with exit code $?"
     check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
     TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
@@ -172,8 +267,17 @@ dpxlogin() {
 # Logout
 dpxlogout() {
     local FUNC='dpxlogout'
+    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='logout'
-    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
+    local METHOD="PUT"
+    local AUTH="$AUTH_HEADER"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+    local DATA=""
+
+    log "Logging out ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local LOGOUT_RESPONSE=$(eval "$curl_command")
     log "$MASKING_USERNAME Logged out successfully\n"
 }
 
@@ -181,16 +285,25 @@ add_domains() {
     local DOMAIN_NAME="$1"
     local DFT_ALGO_CODE="$2"
     local DFT_TOKEN_CODE="$3"
+
     local FUNC='add_domains'
+    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='domains'
+    local METHOD="POST"
+    local AUTH="$AUTH_HEADER"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
 
     if [ -z "$DFT_TOKEN_CODE" ]; then
-       local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
+       local DATA="{\"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
     else
-       local DATA="{ \"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"defaultTokenizationCode\": \"$DFT_TOKEN_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
+       local DATA="{\"defaultAlgorithmCode\": \"$DFT_ALGO_CODE\", \"defaultTokenizationCode\": \"$DFT_TOKEN_CODE\", \"domainName\": \"$DOMAIN_NAME\"}"
     fi
 
-    local ADD_DOMAINS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    log "Adding Domain $DOMAIN_NAME using Algorithm $DFT_ALGO_CODE ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local ADD_DOMAINS_RESPONSE=$(eval "$curl_command")
+
     check_error "$FUNC" "$API" "$ADD_DOMAINS_RESPONSE" "$IGN_ERROR"
     ADD_DOMAINS_VALUE=$(echo "$ADD_DOMAINS_RESPONSE" | jq -r '.domainName')
     check_response "$ADD_DOMAINS_VALUE" "$IGN_ERROR"
@@ -202,11 +315,21 @@ add_expressions() {
     local EXPRESSNAME="$2"
     local REGEXP="$3"
     local DATALEVEL="$4"
+
     local FUNC='add_domains'
+    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='profile-expressions'
+    local METHOD="POST"
+    local AUTH="$AUTH_HEADER"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+
     local DATA="{ \"domainName\": \"$DOMAIN\", \"expressionName\": \"$EXPRESSNAME\", \"regularExpression\": \"$REGEXP\", \"dataLevelProfiling\": \"$DATALEVEL\"}"
 
-    local ADD_EXPRESS_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    log "Adding Expression $EXPRESSNAME to Domain $DOMAIN ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local ADD_EXPRESS_RESPONSE=$(eval "$curl_command")
+
     check_error "$FUNC" "$API" "$ADD_EXPRESS_RESPONSE" "$IGN_ERROR"
     ADD_EXPRESS_VALUE=$(echo "$ADD_EXPRESS_RESPONSE" | jq -r '.expressionName')
     check_response "$ADD_EXPRESS_VALUE" "$IGN_ERROR"
@@ -223,15 +346,25 @@ add_expressions() {
 add_profileset() {
     local PROFILE_NAME="$1"
     local EXPRESSID_LIST="$2"
+
     local FUNC='add_profileset'
+    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='profile-sets'
-    local DATA="{ \"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ] }"
-    local ADD_PROFILE_RESPONSE=$(curl -X POST -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
+    local METHOD="POST"
+    local AUTH="$AUTH_HEADER"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+
+    local DATA="{\"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ]}"
+
+    log "Adding Profileset $PROFILE_NAME using Expressions ids ${EXPRESSID_LIST} ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local ADD_PROFILE_RESPONSE=$(eval "$curl_command")
+
     check_error "$FUNC" "$API" "$ADD_PROFILE_RESPONSE" "$IGN_ERROR"
     ADD_PROFILE_VALUE=$(echo "$ADD_PROFILE_RESPONSE" | jq -r '.profileSetName')
     check_response "$ADD_PROFILE_VALUE" "$IGN_ERROR"
-    log "ProfileSet: $ADD_PROFILE_VALUE added.\n"
-    log "Expressions ids ${EXPRESSID_LIST} added to ${PROFILE_NAME}\n"
+    log "ProfileSet: $ADD_PROFILE_VALUE added using expressions ids ${EXPRESSID_LIST}\n"
 }
 
 check_packages
@@ -256,14 +389,20 @@ do
         --algorithms-file)
             args="${args}-a "
             ;;
-        --exe-algorithms)
-            args="${args}-x "
+        --run-algorithms)
+            args="${args}-r "
             ;;
         --ignore-errors)
             args="${args}-i "
             ;;
         --log-file)
             args="${args}-o "
+            ;;
+        --proxy-bypass)
+            args="${args}-x "
+            ;;
+        --http-secure)
+            args="${args}-k "
             ;;
         --masking-engine)
             args="${args}-m "
@@ -284,7 +423,7 @@ done
 
 eval set -- $args
 
-while getopts ":h:f:e:d:a:x:i:o:m:u:p:" PARAMETERS; do
+while getopts ":h:f:e:d:a:r:i:o:x:k:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
@@ -304,7 +443,7 @@ while getopts ":h:f:e:d:a:x:i:o:m:u:p:" PARAMETERS; do
         	ALGO_META_FILE=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
-        x)
+        r)
         	ALGO_EXE=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
@@ -314,6 +453,14 @@ while getopts ":h:f:e:d:a:x:i:o:m:u:p:" PARAMETERS; do
         	;;
         o)
         	logFileName=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        x)
+        	PROXY_BYPASS=${OPTARG[@]}
+        	add_parms "$PARAMETERS";
+        	;;
+        k)
+        	SECURE_CONN=${OPTARG[@]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -336,11 +483,8 @@ done
 # Check all parameters
 check_parm "$ALLPARMS"
 
-# Update URL
-URL_BASE="http://${MASKING_ENGINE}/masking/api/v5.1.22"
-
 # Check connection
-check_conn
+check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
 
 # Check csv file exists
 check_file "$ALGO_META_FILE" "$IGN_ERROR"
@@ -354,7 +498,9 @@ then
     do
         if [[ ! "$fileName" =~ "#" ]];
         then
-           ./dpxcc_setup_algorithms.sh -a "$fileName" -i "$IGN_ERROR" -o "$logFileName" -m "$MASKING_ENGINE" -u "$MASKING_USERNAME" -p "$MASKING_PASSWORD"
+           runCmd="./dpxcc_setup_algorithms.sh -a $fileName -i $IGN_ERROR -o $logFileName -x $PROXY_BYPASS -k $SECURE_CONN -m $MASKING_ENGINE -u $MASKING_USERNAME -p $MASKING_PASSWORD"
+           log "$runCmd\n"
+           eval "$runCmd"
         fi
     done < "$ALGO_META_FILE"
 fi
@@ -362,7 +508,6 @@ fi
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 # Create Domains
-log "Creating domains: \n"
 while IFS=\; read -r DOMAIN_NAME DFT_ALGO_CODE DFT_TOKEN_CODE
 do
     if [[ ! "$DOMAIN_NAME" =~ "#" ]];
@@ -372,7 +517,6 @@ do
 done < "$DOMAINS_FILE"
 
 # Create Expressions
-log "Creating expressions: \n"
 while IFS=\; read -r EXPRESS_NAME DOMAIN DATALEVEL REGEXP
 do
     if [[ ! "$EXPRESS_NAME" =~ "#" ]];
@@ -382,7 +526,6 @@ do
 done < "$EXPRESS_FILE"
 
 # Add ProfileSet
-log "Creating Profileset: \n"
 add_profileset "$PROFILE_NAME" "$EXPRESSID_LIST"
 
 dpxlogout

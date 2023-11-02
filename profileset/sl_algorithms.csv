@@ -1,7 +1,7 @@
-#algorithmName;algorithmType;description;frameworkId;pluginId;hashMethod;maskedValueCase;inputCaseSensitive;trimWhitespaceFromInput;trimWhitespaceInLookupFile;fileName;fileType
-0_AR_DIRECCION_SL;COMPONENT;Direccion_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Calles.txt;text/plain
-0_AR_LOCALIDAD_SL;COMPONENT;Localidad_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Localidades.txt;text/plain
-0_AR_MUNICIPALIDAD_SL;COMPONENT;Municipalidad_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Municipios.txt;text/plain
-0_AR_DEPARTAMENTO_SL;COMPONENT;Departamento_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Departamentos.txt;text/plain
-0_AR_PROVINCIA_SL;COMPONENT;Provincia_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Provincias.txt;text/plain
-0_AR_EMPRESA_SL;COMPONENT;Empresas_SL;26;7;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Empresas.txt;text/plain
+#algorithmName;algorithmType;description;hashMethod;maskedValueCase;inputCaseSensitive;trimWhitespaceFromInput;trimWhitespaceInLookupFile;fileName;fileType
+0_AR_DIRECCION_SL;COMPONENT;Direccion_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Calles.txt;text/plain
+0_AR_LOCALIDAD_SL;COMPONENT;Localidad_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Localidades.txt;text/plain
+0_AR_MUNICIPALIDAD_SL;COMPONENT;Municipalidad_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Municipios.txt;text/plain
+0_AR_DEPARTAMENTO_SL;COMPONENT;Departamento_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Departamentos.txt;text/plain
+0_AR_PROVINCIA_SL;COMPONENT;Provincia_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Provincias.txt;text/plain
+0_AR_EMPRESA_SL;COMPONENT;Empresas_SL;LEGACY;PRESERVE_LOOKUP_FILE;true;false;false;Empresas.txt;text/plain
