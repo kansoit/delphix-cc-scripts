@@ -1,14 +1,15 @@
 #!/usr/bin/bash
 
 
+apiVer="v5.1.22"
 MASKING_ENGINE=""
 MASKING_USERNAME=""
 MASKING_PASSWORD=""
 URL_BASE=""
-ALGO_FILE=""
+ALGO_FILE="algorithms.csv"
 IGN_ERROR="false"
 KEEPALIVE=300
-logFileDate="`date '+%d%m%Y_%H%M%S'`"
+logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_setup_algorithms_$logFileDate.log"
 PROXY_BYPASS=true
 SECURE_CONN=false
@@ -17,31 +18,24 @@ SECURE_CONN=false
 show_help() {
     echo "Usage: dpxcc_setup_algorithms.sh [options]"
     echo "Options:"
-    echo "  --algorithms-file   -a  File containing Algorithms            - Required value"
-    echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default Value: false"
-    echo "  --log-file          -o  Log file name                         - Default Value: Current date_time.log"
-    echo "  --proxy-bypass      -x  Proxy ByPass                          - Default Value: true"
-    echo "  --http-secure       -k  (http/https)                          - Default Value: false"
+    echo "  --algorithms-file   -a  File containing Algorithms            - Default: algorithms.csv"
+    echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default: false"
+    echo "  --log-file          -o  Log file name                         - Default: Current date_time.log"
+    echo "  --proxy-bypass      -x  Proxy ByPass                          - Default: true"
+    echo "  --http-secure       -k  (http/https)                          - Default: false"
     echo "  --masking-engine    -m  Masking Engine Address                - Required value"
     echo "  --masking-username  -u  Masking Engine User Name              - Required value"
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_setup_algorithms.sh -a algorithms.csv -i false -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
-    exit 1
-}
-
-# Print the message and exit the program.
-die() {
-    echo "*******************************************************************************"
-    echo "$(basename $0) ERROR: $*" >&2
-    echo "*******************************************************************************"
+    echo "dpxcc_setup_algorithms.sh -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
 log (){
     local logMsg="$1"
-    local logMsgDate="[`date '+%d%m%Y %T'`]"
+    local logMsgDate
+    logMsgDate="[$(date '+%d%m%Y %T')]"
     echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
 }
 
@@ -51,12 +45,6 @@ add_parms() {
 
 check_parm() {
     local PARMS="$1"
-
-    local KEY="a"
-    if [[ ! "$PARMS" == *"$KEY"* ]]; then
-        echo "Option -a is missing. Algorithms file is required."
-        exit 1
-    fi
 
     local KEY="m"
     if [[ ! "$PARMS" == *"$KEY"* ]]; then
@@ -78,9 +66,10 @@ check_parm() {
 }
 
 check_packages() {
-    # Check Required Packages
-    local JQ="$(which jq)"
-    local CURL="$(which curl)"
+    local JQ
+    JQ=$(which jq)
+    local CURL
+    CURL=$(which curl)
 
     [ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
     [ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
@@ -91,20 +80,26 @@ check_conn() {
     local PROXY_BYPASS="$2"
     local SECURE_CONN="$3"
 
-    local curl_command="curl -s -v -m 5"
+    local curl_cmd
+    curl_cmd="curl -s -v -m 5"
+
+    local URL
 
     if [ "$SECURE_CONN" = true ]; then
-        local URL="https://$MASKING_IP"
+        URL="https://$MASKING_IP"
     else
-        local URL="http://$MASKING_IP"
+        URL="http://$MASKING_IP"
     fi
 
     if [ "$PROXY_BYPASS" = true ]; then
-        curl_command="$curl_command -x \"\""
+        curl_cmd="$curl_cmd -x \"\""
     fi
 
-    local curl_command="$curl_command -o /dev/null $URL 2>&1"
-    local curlResponse=$(eval "$curl_command")
+    local curl_cmd="$curl_cmd -o /dev/null $URL 2>&1"
+    local curlResponse
+    curlResponse=$(eval "$curl_cmd")
+
+    local curlError
 
     if [[ "$curlResponse" == *"timed out"* ]];
     then
@@ -202,7 +197,7 @@ build_curl() {
     curl_command="$curl_command -H 'Content-Type: $CONTENT_TYPE'"
 
     if [ "$PROXY_BYPASS" = true ]; then
-        curl_command="$curl_command -x \"\""
+        curl_command="$curl_command -x ''"
     fi
 
     curl_command="$curl_command --keepalive-time $KEEPALIVE"
@@ -223,34 +218,37 @@ build_curl() {
     log "$curl_command\n"
 }
 
-# Login and set the correct $AUTH_HEADER.
 dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
 
     local FUNC='dpxlogin'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='login'
     local METHOD="POST"
-    local AUTH=""
     local CONTENT_TYPE="application/json"
     local FORM=""
 
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
+    AUTH_HEADER=""
 
     log "Logging in with $USERNAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local LOGIN_RESPONSE=$(eval "$curl_command") || die "Login failed with exit code $?"
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
-    TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local LOGIN_RESPONSE
+    LOGIN_RESPONSE=$(eval "$curl_command")
+    local IGNORE="false"
+    check_error "$FUNC" "$API" "$LOGIN_RESPONSE" "$IGNORE"
+    local LOGIN_VALUE
+    LOGIN_VALUE=$(echo "$LOGIN_RESPONSE" | jq -r '.errorMessage')
+    check_response "$LOGIN_VALUE" "$IGNORE"
+    TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
-    log "$MASKING_USERNAME logged in successfully\n"
+    log "$MASKING_USERNAME logged in successfully with token $TOKEN\n"
 }
 
-# Logout
 dpxlogout() {
     local FUNC='dpxlogout'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
     local AUTH="$AUTH_HEADER"
@@ -258,10 +256,12 @@ dpxlogout() {
     local FORM=""
     local DATA=""
 
-    log "Logging out ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local LOGOUT_RESPONSE=$(eval "$curl_command")
-    log "$MASKING_USERNAME Logged out successfully\n"
+    if [ -n "$AUTH_HEADER" ]; then
+        log "Logging out ...\n"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        eval "$curl_command"
+        log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
+    fi
 }
 
 upload_files() {
@@ -269,7 +269,7 @@ upload_files() {
     local FILE_TYPE="$2"
 
     local FUNC='upload_files'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='file-uploads?permanent=false'
     local METHOD="POST"
     local AUTH="$AUTH_HEADER"
@@ -279,29 +279,34 @@ upload_files() {
 
     log "Uploading file $FILE_NAME ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local FILE_UPLOADS_RESPONSE=$(eval "$curl_command")
+    local FILE_UPLOAD_RESPONSE
+    FILE_UPLOAD_RESPONSE=$(eval "$curl_command")
 
-    check_error "$FUNC" "$API" "$FILE_UPLOADS_RESPONSE" "$IGN_ERROR"
-    FILE_UPLOADS_VALUE=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.filename')
-    check_response "$FILE_UPLOADS_VALUE" "$IGN_ERROR"
-    fileReferenceId=$(echo "$FILE_UPLOADS_RESPONSE" | jq -r '.fileReferenceId')
-    log "File: $FILE_UPLOADS_VALUE uploaded - ID: $fileReferenceId\n"
+    check_error "$FUNC" "$API" "$FILE_UPLOAD_RESPONSE" "$IGN_ERROR"
+    local FILE_UPLOAD_VALUE
+    FILE_UPLOAD_VALUE=$(echo "$FILE_UPLOAD_RESPONSE" | jq -r '.filename')
+    check_response "$FILE_UPLOAD_VALUE" "$IGN_ERROR"
+
+    fileReferenceId=""
+    fileReferenceId=$(echo "$FILE_UPLOAD_RESPONSE" | jq -r '.fileReferenceId')
+
+    if [ -n "$fileReferenceId" ]; then
+        log "File: $FILE_UPLOAD_VALUE uploaded - ID: $fileReferenceId\n"
+    else
+        log "File NOT uploaded\n"
+    fi
 }
 
-add_sl_algorithms() {
+add_algorithm() {
     local algorithmName="$1"
     local algorithmType="$2"
     local description="$3"
     local frameworkId="$4"
     local pluginId="$5"
-    local hashMethod="$6"
-    local maskedValueCase="$7"
-    local inputCaseSensitive="$8"
-    local trimWhitespaceFromInput="${9}"
-    local trimWhitespaceInLookupFile="${10}"
-    local uri="${11}"
+    local ExtensionJson="$6"
+    local newUri="$7"
 
-    local FUNC='add_sl_algorithms'
+    local FUNC='add_algorithm'
     local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
     local API='algorithms'
     local METHOD="POST"
@@ -309,213 +314,35 @@ add_sl_algorithms() {
     local CONTENT_TYPE="application/json"
     local FORM=""
 
-    local lookupFile="{\"uri\": \"$uri\"}"
-    local algorithmExtension="{\"hashMethod\": \"$hashMethod\", \"lookupFile\": $lookupFile}"
-    local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
-                 \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension,\
-                 \"maskedValueCase\": \"$maskedValueCase\", \"inputCaseSensitive\": \"$inputCaseSensitive\",\
-                 \"trimWhitespaceFromInput\": \"$trimWhitespaceFromInput\", \"trimWhitespaceInLookupFile\": \"$trimWhitespaceInLookupFile\"}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
+    local algorithmExtension
+
+    if [ -n "$newUri" ]; then
+        algorithmExtension=$(echo "$ExtensionJson" | jq --arg newUri "$newUri" '.lookupFile.uri = $newUri')
+    else
+        algorithmExtension="$ExtensionJson"
+    fi
+
+    local FullJson
+    FullJson="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
+               \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension}"
+    local DATA
+    DATA=$(echo "$FullJson" | jq -c)
 
     log "Adding Algorithm $algorithmName using Secure Lookup Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
+    local ADD_ALGO_RESPONSE
+    ADD_ALGO_RESPONSE=$(eval "$curl_command")
 
     check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
+    local ADD_ALGO_VALUE
     ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
     check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
-}
 
-add_nm_algorithms() {
-    local algorithmName="$1"
-    local algorithmType="$2"
-    local description="$3"
-    local frameworkId="$4"
-    local pluginId="$5"
-    local maskedValueCase="$6"
-    local inputCaseSensitive="$7"
-    local filterAccent="${8}"
-    local maxLengthOfMaskedName="${9}"
-    local uri="${10}"
-
-    local FUNC='add_nm_algorithms'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
-    local API='algorithms'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM=""
-
-    local lookupFile="{\"uri\": \"$uri\"}"
-    local algorithmExtension="{\"lookupFile\": $lookupFile}"
-    local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
-                 \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension,\
-                 \"maskedValueCase\": \"$maskedValueCase\", \"filterAccent\": \"$filterAccent\", \"inputCaseSensitive\": \"$inputCaseSensitive\",\
-                 \"maxLengthOfMaskedName\": \"$maxLengthOfMaskedName\"}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
-
-    log "Adding Algorithm $algorithmName using Name Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
-
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
-    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
-}
-
-add_nmfull_algorithms() {
-    local algorithmName="$1"
-    local algorithmType="$2"
-    local description="$3"
-    local frameworkId="$4"
-    local pluginId="$5"
-    local lastNameAtTheEnd="${6}"
-    local lastNameSeparators="${7}"
-    local maxNumberFirstNames="${8}"
-    local lastNameAlgorithmRef="${9}"
-    local firstNameAlgorithmRef="${10}"
-    local maxLengthOfMaskedName="${11}"
-    local ifSingleWordConsiderAsLastName="${12}"
-    local uri="${13}"
-
-    local FUNC='add_nmfull_algorithms'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
-    local API='algorithms'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM=""
-
-    local lastNameAlgRef="{\"name\": \"$lastNameAlgorithmRef\"}"
-    local firstNameAlgRef="{\"name\": \"$firstNameAlgorithmRef\"}"
-    local algorithmExtension="{\"lastNameAtTheEnd\": $lastNameAtTheEnd, \"lastNameSeparators\": [$lastNameSeparators], \"maxNumberFirstNames\": $maxNumberFirstNames,\
-                         \"lastNameAlgorithmRef\": $lastNameAlgRef, \"firstNameAlgorithmRef\": $firstNameAlgRef}"
-    local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
-               \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension,\
-               \"maxLengthOfMaskedName\": $maxLengthOfMaskedName, \"ifSingleWordConsiderAsLastName\": $ifSingleWordConsiderAsLastName}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
-
-    log "Adding Algorithm $algorithmName using Full Name Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
-
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
-    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
-}
-
-add_pc_algorithms() {
-    local algorithmName="$1"
-    local algorithmType="$2"
-    local description="$3"
-    local frameworkId="$4"
-    local pluginId="$5"
-    local preserve="$6"
-    local minMaskedPositions="$7"
-
-    local FUNC='add_pc_algorithms'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
-    local API='algorithms'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM=""
-
-    local algorithmExtension="{\"preserve\": \"$preserve\", \"minMaskedPositions\": $minMaskedPositions}"
-    local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
-                 \"frameworkId\": \"$frameworkId\", \"pluginId\": \"$pluginId\", \"algorithmExtension\": $algorithmExtension}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
-
-    log "Adding Algorithm $algorithmName using PaymentCard Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
-
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
-    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
-}
-
-add_cm_algorithms() {
-    local algorithmName="$1"
-    local algorithmType="$2"
-    local description="$3"
-    local frameworkId="$4"
-    local pluginId="$5"
-    local caseSensitive="${6}"
-    local start="${7}"
-    local length="${8}"
-    local direction="${9}"
-    local characterGroups="${10}"
-    local minMaskedPositions="${11}"
-    local preserveLeadingZeros="${12}"
-
-    local FUNC='add_cm_algorithms'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
-    local API='algorithms'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM=""
-
-    local algorithmExtension="{\"caseSensitive\":$caseSensitive,\"preserveRanges\":[$preserveRanges],\
-                               \"characterGroups\":[\"$characterGroups\"],\"minMaskedPositions\":$minMaskedPositions,\
-                               \"preserveLeadingZeros\":$preserveLeadingZeros}"
-    local DATA="{\"algorithmName\":\"$algorithmName\",\"algorithmType\":\"$algorithmType\",\"description\":\"$description\",\
-                 \"frameworkId\":$frameworkId,\"pluginId\":$pluginId,\"algorithmExtension\":$algorithmExtension}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
-
-    log "Adding Algorithm $algorithmName using Character Mapping Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
-
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
-    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
-}
-
-add_em_algorithms() {
-    local algorithmName="$1"
-    local algorithmType="$2"
-    local description="$3"
-    local frameworkId="$4"
-    local pluginId="$5"
-    local nameAction="${6}"
-    local domainAction="${7}"
-    local nameAlgorithm="${8}"
-    local nameLookupFile="${9}"
-    local domainAlgorithm="${10}"
-    local domainReplacementString="${11}"
-
-    local FUNC='add_em_algorithms'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
-    local API='algorithms'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM=""
-
-    local nameAlgo="{\"name\": \"$nameAlgorithm\"}"
-    local domainAlgo="{\"name\": \"$domainAlgorithm\"}"
-    local algorithmExtension="{\"nameAction\": \"$nameAction\", \"domainAction\": \"$domainAction\", \"nameAlgorithm\": $nameAlgo,\
-                               \"nameLookupFile\": $nameLookupFile, \"domainAlgorithm\": $domainAlgo,\
-                               \"domainReplacementString\": $domainReplacementString}"
-    local DATA="{\"algorithmName\": \"$algorithmName\", \"algorithmType\": \"$algorithmType\", \"description\": \"$description\",\
-           \"frameworkId\": $frameworkId, \"pluginId\": $pluginId, \"algorithmExtension\": $algorithmExtension}"
-    local DATA="$(echo "$DATA" | sed -e 's/  */ /g')"
-
-    log "Adding Algorithm $algorithmName using Email Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local ADD_ALGO_RESPONSE=$(eval "$curl_command")
-
-    check_error "$FUNC" "$API" "$ADD_ALGO_RESPONSE" "$IGN_ERROR"
-    ADD_ALGO_VALUE=$(echo "$ADD_ALGO_RESPONSE" | jq -r '.reference')
-    check_response "$ADD_ALGO_VALUE" "$IGN_ERROR"
-    log "Algorithm: $ADD_ALGO_VALUE added.\n"
+    if [ ! "$ADD_ALGO_VALUE" == "null" ]; then
+        log "Algorithm: $ADD_ALGO_VALUE added.\n"
+    else
+        log "Algorithm NOT added.\n"
+    fi
 }
 
 get_frameworks() {
@@ -533,7 +360,8 @@ get_frameworks() {
 
     log "Getting frameworks...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-    local GET_FRAMEWORK_RESPONSE=$(eval "$curl_command")
+    local GET_FRAMEWORK_RESPONSE
+    GET_FRAMEWORK_RESPONSE=$(eval "$curl_command")
 
     check_error "$FUNC" "$API" "$GET_FRAMEWORK_RESPONSE" "$IGN_ERROR"
     GET_FRAMEWORK_VALUE=$(echo "$GET_FRAMEWORK_RESPONSE" | jq -r '.responseList')
@@ -544,7 +372,8 @@ get_frameworks() {
 get_framework_ID() {
     local searchFramework="$1"
     local jsonResponse="$2"
-    local parsedJson=$(echo "$jsonResponse" | jq --arg search "$searchFramework" 'map(select(.frameworkName == $search)) | .[0]')
+    local parsedJson
+    parsedJson=$(echo "$jsonResponse" | jq --arg search "$searchFramework" 'map(select(.frameworkName == $search)) | .[0]')
     frameworkId=$(echo "$parsedJson" | jq -r '.frameworkId')
     pluginId=$(echo "$parsedJson" | jq -r '.plugin.pluginId')
 }
@@ -592,42 +421,42 @@ do
     esac
 done
 
-eval set -- $args
+eval set -- "$args"
 
 while getopts ":h:a:i:o:x:k:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
         a)
-        	ALGO_FILE=${OPTARG[@]}
+        	ALGO_FILE=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         i)
-        	IGN_ERROR=${OPTARG[@]}
+        	IGN_ERROR=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         o)
-        	logFileName=${OPTARG[@]}
+        	logFileName=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         x)
-        	PROXY_BYPASS=${OPTARG[@]}
+        	PROXY_BYPASS=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         k)
-        	SECURE_CONN=${OPTARG[@]}
+        	SECURE_CONN=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         m)
-        	MASKING_ENGINE=${OPTARG[@]}
+        	MASKING_ENGINE=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         u)
-        	MASKING_USERNAME=${OPTARG[@]}
+        	MASKING_USERNAME=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         p)
-        	MASKING_PASSWORD=${OPTARG[@]}
+        	MASKING_PASSWORD=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         :) echo "Option -$OPTARG requires an argument."; exit 1;;
@@ -642,115 +471,23 @@ check_parm "$ALLPARMS"
 check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
 
 check_file "$ALGO_FILE" "$IGN_ERROR"
+
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+
 get_frameworks
+
+while IFS=\; read -r algorithmName algorithmType description frameworkName fileName fileType algorithmExtension
+do
+    if [[ ! "$algorithmName" =~ "#" ]];
+    then
+        get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE" "$frameworkId" "$pluginId"
+        ReferenceId=""
+        if [ -n "$fileName" ]; then
+            upload_files "$fileName" "$fileType"
+            ReferenceId="$fileReferenceId"
+        fi
+        add_algorithm "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$algorithmExtension" "$ReferenceId"
+    fi
+done < "$ALGO_FILE"
+
 dpxlogout
-
-if [[ "$ALGO_FILE" == *"sl_"* ]];
-then
-    frameworkName="Secure Lookup"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description hashMethod maskedValueCase inputCaseSensitive\
-                         trimWhitespaceFromInput trimWhitespaceInLookupFile fileName fileType
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            upload_files "$fileName" "$fileType"
-            add_sl_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$hashMethod" "$maskedValueCase" "$inputCaseSensitive"\
-                              "$trimWhitespaceFromInput" "$trimWhitespaceInLookupFile" "$fileReferenceId"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
-
-if [[ "$ALGO_FILE" == *"nm_"* ]];
-then
-    frameworkName="Name"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description maskedValueCase inputCaseSensitive filterAccent maxLengthOfMaskedName fileName fileType
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            upload_files "$fileName" "$fileType"
-            add_nm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$maskedValueCase" "$inputCaseSensitive"\
-                              "$filterAccent" "$maxLengthOfMaskedName" "$fileReferenceId"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
-
-if [[ "$ALGO_FILE" == *"fn_"* ]];
-then
-    frameworkName="FullName"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description lastNameAtTheEnd \
-                         lastNameSeparators maxNumberFirstNames lastNameAlgorithmRef firstNameAlgorithmRef maxLengthOfMaskedName\
-                         ifSingleWordConsiderAsLastName FileName FileType
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            add_nmfull_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$lastNameAtTheEnd"\
-                                  "$lastNameSeparators" "$maxNumberFirstNames" "$lastNameAlgorithmRef" "$firstNameAlgorithmRef" "$maxLengthOfMaskedName"\
-                                  "$ifSingleWordConsiderAsLastName" "$lastNameAtTheEnd" "$fileReferenceId"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
-
-if [[ "$ALGO_FILE" == *"pc_"* ]];
-then
-    frameworkName="Payment Card"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description preserve minMaskedPositions
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            add_pc_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$preserve" "$minMaskedPositions"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
-
-if [[ "$ALGO_FILE" == *"cm_"* ]];
-then
-    frameworkName="Character Mapping"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description caseSensitive \
-                         start length direction characterGroups minMaskedPositions preserveLeadingZeros
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            add_cm_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$caseSensitive"\
-                              "$start" "$length" "$direction" "$characterGroups" "$minMaskedPositions" "$preserveLeadingZeros"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
-
-if [[ "$ALGO_FILE" == *"em_"* ]];
-then
-    frameworkName="Email"
-    get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
-
-    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-    while IFS=\; read -r algorithmName algorithmType description nameAction \
-                         domainAction nameAlgorithm nameLookupFile domainAlgorithm domainReplacementString
-    do
-        if [[ ! "$algorithmName" =~ "#" ]];
-        then
-            add_em_algorithms "$algorithmName" "$algorithmType" "$description" "$frameworkId" "$pluginId" "$nameAction"\
-                              "$domainAction" "$nameAlgorithm" "$nameLookupFile" "$domainAlgorithm" "$domainReplacementString"
-        fi
-    done < "$ALGO_FILE"
-    dpxlogout
-fi
