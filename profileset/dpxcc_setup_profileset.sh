@@ -10,7 +10,7 @@ PROFILE_NAME=""
 EXPRESS_FILE='expressions.csv'
 DOMAINS_FILE='domains.csv'
 ALGO_FILE='algorithms.csv'
-ALGO_EXE='true'
+ALGO_EXE=true
 IGN_ERROR='false'
 KEEPALIVE=300
 EXPRESSID_LIST="7,8,11,22,23,49,50"
@@ -116,7 +116,7 @@ check_conn() {
     fi
 
     if [ "$PROXY_BYPASS" = true ]; then
-        curl_cmd="$curl_cmd -x \"\""
+        curl_cmd="$curl_command -x ''"
     fi
 
     local curl_cmd="$curl_cmd -o /dev/null $URL 2>&1"
