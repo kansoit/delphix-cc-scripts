@@ -34,7 +34,7 @@
 #
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
-#    --algorithms-file     -a    File containing Algorithms                                         Required value
+#    --algorithms-file     -a    File containing Algorithms                                         algorithms.csv
 #    --ignore-errors       -i    Ignore errors while adding Algorithms                              false
 #    --proxy-bypass        -x    Proxy ByPass                                                       true
 #    --http-secure         -k    (http/https)                                                       false
