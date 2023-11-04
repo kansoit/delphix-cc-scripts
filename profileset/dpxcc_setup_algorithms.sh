@@ -92,7 +92,7 @@ check_conn() {
     fi
 
     if [ "$PROXY_BYPASS" = true ]; then
-        curl_cmd="$curl_cmd -x \"\""
+        curl_cmd="$curl_command -x ''"
     fi
 
     local curl_cmd="$curl_cmd -o /dev/null $URL 2>&1"
@@ -328,7 +328,7 @@ add_algorithm() {
     local DATA
     DATA=$(echo "$FullJson" | jq -c)
 
-    log "Adding Algorithm $algorithmName using Secure Lookup Framework - FrameworkId: $frameworkId PluginId: $pluginId ...\n"
+    log "Adding Algorithm $algorithmName using FrameworkId: $frameworkId PluginId: $pluginId ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
     local ADD_ALGO_RESPONSE
     ADD_ALGO_RESPONSE=$(eval "$curl_command")
