@@ -251,14 +251,13 @@ dpxlogout() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
     local DATA=""
 
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
-        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
         eval "$curl_command"
         log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
     fi
@@ -272,13 +271,12 @@ upload_files() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='file-uploads?permanent=false'
     local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="multipart/form-data"
     local FORM="file=@$FILE_NAME;type=$FILE_TYPE"
     local DATA=""
 
     log "Uploading file $FILE_NAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
     local FILE_UPLOAD_RESPONSE
     FILE_UPLOAD_RESPONSE=$(eval "$curl_command")
 
@@ -480,7 +478,7 @@ while IFS=\; read -r algorithmName algorithmType description frameworkName fileN
 do
     if [[ ! "$algorithmName" =~ "#" ]];
     then
-        get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE" "$frameworkId" "$pluginId"
+        get_framework_ID "$frameworkName" "$GET_FRAMEWORK_VALUE"
         ReferenceId=""
         if [ -n "$fileName" ]; then
             upload_files "$fileName" "$fileType"

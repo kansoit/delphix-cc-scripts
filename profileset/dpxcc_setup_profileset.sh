@@ -275,14 +275,13 @@ dpxlogout() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
     local DATA=""
 
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
-        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
         eval "$curl_command"
         log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
     fi
@@ -297,7 +296,6 @@ add_domains() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='domains'
     local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
 
@@ -308,7 +306,7 @@ add_domains() {
     fi
 
     log "Adding Domain $DOMAIN_NAME using Algorithm $DFT_ALGO_CODE ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
     local ADD_DOMAINS_RESPONSE
     ADD_DOMAINS_RESPONSE=$(eval "$curl_command")
 
@@ -334,14 +332,13 @@ add_expressions() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='profile-expressions'
     local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
 
     local DATA="{ \"domainName\": \"$DOMAIN\", \"expressionName\": \"$EXPRESSNAME\", \"regularExpression\": \"$REGEXP\", \"dataLevelProfiling\": \"$DATALEVEL\"}"
 
     log "Adding Expression $EXPRESSNAME to Domain $DOMAIN ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
     local ADD_EXPRESS_RESPONSE
     ADD_EXPRESS_RESPONSE=$(eval "$curl_command")
 
@@ -373,14 +370,13 @@ add_profileset() {
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='profile-sets'
     local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
 
     local DATA="{\"profileSetName\": \"$PROFILE_NAME\", \"profileExpressionIds\": [ $EXPRESSID_LIST ]}"
 
     log "Adding Profileset $PROFILE_NAME using Expressions ids ${EXPRESSID_LIST} ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
     local ADD_PROFILE_RESPONSE
     ADD_PROFILE_RESPONSE=$(eval "$curl_command")
 
