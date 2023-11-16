@@ -5,7 +5,7 @@
 # dpxcc_config_ldap.sh
 # Created: Horacio Dos - 10/2023
 #
-#   dpxcc_config_ldap.sh --help
+#   dpxcc_setup_ldap.sh --help
 #
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
@@ -16,12 +16,32 @@
 #    --ldap-tls               -l Enable TLS                                                         false
 #    --ldap-filter            -f LDAP Search Filter                                                 (&(objectClass=person)(sAMAccountName=?))
 #    --ldap-enabled           -e LDAP Enabled                                                       false
+#    --log-file               -o Log file name                                                      Default: Current date_time.log"
+#    --proxy-bypass           -x Proxy ByPass                                                       true
+#    --http-secure            -k (http/https)                                                       false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
 #    --masking-user           -u Masking Engine User Name                                           Required Value
 #    --masking-pwd            -p Password                                                           Required Value
-#    --no-ask                 -a No Ask dialog                                                      no
-#    --no-rollback            -r No Rollback dialog                                                 no
+#    --no-ask                 -a No Ask dialog                                                      no (Future Use)
+#    --no-rollback            -r No Rollback dialog                                                 no (Future Use)
 #    --help                   -h help
 #
-#   Ex.: dpxcc_config_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <Masking IP> -u <Masking User> -p <Masking Password>
+#   Ex.: dpxcc_setup_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <Masking IP> -u <Masking User> -p <Masking Password>
+#
+# dpxcc_getconfig_ldap.sh
+# Created: Horacio Dos - 11/2023
+#
+#   dpxcc_getconfig_ldap.sh --help
+#
+#    Parameter             Short Description                                                        Default
+#    --------------------- ----- ------------------------------------------------------------------ --------------
+#    --log-file               -o Log file name                                                      Default: Current date_time.log"
+#    --proxy-bypass           -x Proxy ByPass                                                       true
+#    --http-secure            -k (http/https)                                                       false
+#    --masking-engine         -m Masking Engine Address                                             Required Value
+#    --masking-user           -u Masking Engine User Name                                           Required Value
+#    --masking-pwd            -p Password                                                           Required Value
+#    --help                   -h help
+#
+#   Ex.: dpxcc_getconfig_ldap.sh -s <LDAP IP> -b DC=candy,DC=com,DC=ar -d CANDY -e true -m <Masking IP> -u <Masking User> -p <Masking Password>
 ```
