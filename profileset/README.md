@@ -17,6 +17,7 @@
 #    --algorithms-file        -a CSV file: Algorithms file                                          algorithms.csv
 #    --exe-algorithms         -r Execute Algorithms Setup                                           true
 #    --ignore-errors          -i Ignore errors while adding domains/express/algorithms              false
+#    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
 #    --http-secure            -k (http/https)                                                       false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
@@ -36,6 +37,7 @@
 #    --------------------- ----- ------------------------------------------------------------------ --------------
 #    --algorithms-file     -a    File containing Algorithms                                         algorithms.csv
 #    --ignore-errors       -i    Ignore errors while adding Algorithms                              false
+#    --log-file            -o    Log file name                                                      Current date_time.log"
 #    --proxy-bypass        -x    Proxy ByPass                                                       true
 #    --http-secure         -k    (http/https)                                                       false
 #    --masking-engine      -m    Masking Engine Address                                             Required value
