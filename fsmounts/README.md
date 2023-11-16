@@ -10,6 +10,7 @@
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
 #    --fsmounts-file       -f    File containing FS Mounts                                          fsmounts.csv
+#    --log-file            -o    Log file name                                                      Current date_time.log"
 #    --proxy-bypass        -x    Proxy ByPass                                                       true
 #    --http-secure         -k    (http/https)                                                       false
 #    --masking-engine      -m    Masking Engine Address                                             Required value
