@@ -16,7 +16,7 @@
 #    --ldap-tls               -l Enable TLS                                                         false
 #    --ldap-filter            -f LDAP Search Filter                                                 (&(objectClass=person)(sAMAccountName=?))
 #    --ldap-enabled           -e LDAP Enabled                                                       false
-#    --log-file               -o Log file name                                                      Default: Current date_time.log"
+#    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
 #    --http-secure            -k (http/https)                                                       false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
@@ -35,7 +35,7 @@
 #
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
-#    --log-file               -o Log file name                                                      Default: Current date_time.log"
+#    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
 #    --http-secure            -k (http/https)                                                       false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
