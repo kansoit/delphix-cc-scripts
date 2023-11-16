@@ -78,8 +78,8 @@ check_conn() {
     local PROXY_BYPASS="$2"
     local SECURE_CONN="$3"
 
-    local curl_cmd
-    curl_cmd="curl -s -v -m 5"
+    local curl_conn
+    curl_conn="curl -s -v -m 5"
 
     local URL
 
@@ -90,12 +90,12 @@ check_conn() {
     fi
 
     if [ "$PROXY_BYPASS" = true ]; then
-        curl_cmd="$curl_command -x ''"
+        curl_conn="$curl_conn -x ''"
     fi
 
-    local curl_cmd="$curl_cmd -o /dev/null $URL 2>&1"
+    local curl_conn="$curl_conn -o /dev/null $URL 2>&1"
     local curlResponse
-    curlResponse=$(eval "$curl_cmd")
+    curlResponse=$(eval "$curl_conn")
 
     local curlError
 
@@ -260,7 +260,7 @@ create_fsmounts() {
     local connectOnStartup="$6"
 
     local FUNC='create_fsmounts'
-    local URL_BASE="$MASKING_ENGINE/masking/api/v5.1.22"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='mount-filesystem'
     local METHOD="POST"
     local AUTH="$AUTH_HEADER"
