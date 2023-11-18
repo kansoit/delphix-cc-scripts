@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-apiVer="v5.1.22"
+apiVer="v5.1.27"
 MASKING_ENGINE=""
 MASKING_USERNAME=""
 MASKING_PASSWORD=""
@@ -132,38 +132,51 @@ check_conn() {
     fi
 }
 
-# Check if $1 not empty. If so print out message specified in $2 and exit.
-check_response() {
-    local RESPONSE="$1"
+split_response() {
+    local CURL_FULL_RESPONSE="$1"
 
-    if [ -z "$RESPONSE" ];
+    local line_break
+    line_break=$(echo "$CURL_FULL_RESPONSE" | awk -v RS='\r\n' '/^$/{print NR; exit;}')
+
+    CURL_HEADER_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR<LINE_BREAK{print $0}')
+    CURL_HEADER_RESPONSE=$(echo "$CURL_HEADER_RESPONSE" | awk '/^HTTP/{print $2}')
+    CURL_BODY_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR>LINE_BREAK{print $0}')
+}
+
+# Check if $1 not empty. If so print out message specified in $2 and exit.
+check_response_value() {
+    local RESPONSE_VALUE="$1"
+
+    if [ -z "$RESPONSE_VALUE" ];
     then
-       log "Check Response! No data\n"
-       dpxlogout
-       exit 1
+        log "${FUNCNAME[0]}() -> No data in response body\n"
+        dpxlogout
+        exit 1
     fi
 }
 
-check_error() {
+check_response_error() {
     local FUNC="$1"
     local API="$2"
-    local RESPONSE="$3"
 
     local errorMessage
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
+    if [ "$(echo "$CURL_BODY_RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
-        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
         if [[ ! "$FUNC" == "dpxlogin" ]];
         then
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
             dpxlogout
             exit 1
         else
-            errorMessage=$(echo "$RESPONSE" | jq -r '.errorMessage')
+            errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
             echo "$errorMessage"
             exit 1
         fi
+    else
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
     fi
 }
 
@@ -211,7 +224,7 @@ build_curl() {
         curl_command="$curl_command -k "
     fi
 
-    curl_command="$curl_command -s $URL_BASE/$API"
+    curl_command="$curl_command -i -s $URL_BASE/$API"
     log "$curl_command\n"
 }
 
@@ -232,13 +245,18 @@ dpxlogin() {
 
     log "Logging in with $USERNAME ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+
     local LOGIN_RESPONSE
     LOGIN_RESPONSE=$(eval "$curl_command")
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
+
+    split_response "$LOGIN_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
     local LOGIN_VALUE
-    LOGIN_VALUE=$(echo "$LOGIN_RESPONSE" | jq -r '.errorMessage')
-    check_response "$LOGIN_VALUE"
-    TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.Authorization')
+    LOGIN_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+    check_response_value "$LOGIN_VALUE"
+
+    TOKEN=$(echo "$CURL_BODY_RESPONSE" | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
     log "$MASKING_USERNAME logged in successfully with token $TOKEN\n"
 }
@@ -256,7 +274,10 @@ dpxlogout() {
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
         build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
-        eval "$curl_command"
+        local LOGOUT_RESPONSE
+        LOGOUT_RESPONSE=$(eval "$curl_command")
+        split_response "$LOGOUT_RESPONSE"
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
         log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
     fi
 }
@@ -265,63 +286,65 @@ dpxlogout() {
 get_ldap_config() {
     local setting_group="ldap"
     local page_number=1
-    local page_size=256
+    local page_size=10
 
     local FUNC='get_ldap_config'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
-    local API='application-settings'
+    local API="application-settings?setting_group=$setting_group&page_number=$page_number&page_size=$page_size"
     local METHOD="GET"
     local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM=""
-    local DATA
+    local DATA=""
 
     local settingName
     local settingValue
 
-    DATA="{\"setting_group\": \"$setting_group\", \"page_number\": $page_number, \"page_size\": $page_size}"
-
-    log "Getting LDAP Server Name ...\n"
+    log "Getting LDAP Parameters ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+
     local LDAP_CONFIG_RESPONSE
     LDAP_CONFIG_RESPONSE=$(eval "$curl_command")
-    check_error "$FUNC" "$API" "$LDAP_CONFIG_RESPONSE"
+
+    split_response "$LDAP_CONFIG_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
     local LDAP_CONFIG_VALUE
-    LDAP_CONFIG_VALUE=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r '.responseList[]')
-    check_response "$LDAP_CONFIG_VALUE"
+    LDAP_CONFIG_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
+    check_response_value "$LDAP_CONFIG_VALUE"
 
     settingName="LdapHost"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP Server Name/Ip: $settingValue\n"
     log "LDAP Server Name/Ip: $settingValue\n"
 
     settingName="LdapPort"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP Port Number: $settingValue\n"
     log "LDAP Port Number: $settingValue\n"
 
     settingName="LdapBasedn"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP BaseDN: $settingValue\n"
     log "LDAP BaseDN: $settingValue\n"
 
     settingName="LdapFilter"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP Filter: $settingValue\n"
     log "LDAP Filter: $settingValue\n"
 
     settingName="MsadDomain"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP Domain Name: $settingValue\n"
     log "LDAP Domain Name: $settingValue\n"
 
     settingName="LdapTlsEnable"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP TLS Enabled: $settingValue\n"
     log "LDAP TLS Enabled: $settingValue\n"
 
     settingName="Enable"
-    settingValue=$(echo "$LDAP_CONFIG_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
+    settingValue=$(echo "$CURL_BODY_RESPONSE" | jq -r ".responseList[] | select(.settingName == \"$settingName\") | .settingValue")
     msg_box "LDAP Status Enabled: $settingValue\n"
     log "LDAP Status Enabled: $settingValue\n"
 }
@@ -406,7 +429,6 @@ check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 msg_box "\n"
-log "Getting current LDAP Parameters\n"
 
 get_ldap_config
 
@@ -416,4 +438,4 @@ dpxlogout
 
 dialog --stdout --no-collapse --title "Current LDAP Parameters" \
        --backtitle "Delphix LDAP GetConfig" \
-       --no-ok --infobox "$ALLMSG" 0 0 
+       --no-ok --infobox "$ALLMSG" 0 0
