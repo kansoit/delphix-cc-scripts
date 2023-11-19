@@ -1,20 +1,25 @@
 #!/usr/bin/bash
 
 
+apiVer="v5.1.27"
 MASKING_ENGINE=""
 MASKING_USERNAME=""
 MASKING_PASSWORD=""
 URL_BASE=""
-IGN_ERROR='false'
 KEEPALIVE=300
-logFileDate="`date '+%d%m%Y_%H%M%S'`"
+logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_get_frameworks_$logFileDate.log"
+JsonFileName="dpxcc_get_frameworks_$logFileDate.json"
+PROXY_BYPASS=true
+SECURE_CONN=false
 
 
 show_help() {
     echo "Usage: dpxcc_get_frameworks.sh [options]"
     echo "Options:"
     echo "  --log-file          -o  Log file name            - Default Value: Current date_time.log"
+    echo "  --proxy-bypass      -x  Proxy ByPass             - Default: true"
+    echo "  --http-secure       -k  (http/https)             - Default: false"
     echo "  --masking-engine    -m  Masking Engine Address   - Required value"
     echo "  --masking-username  -u  Masking Engine User Name - Required value"
     echo "  --masking-pwd       -p  Masking Engine Password  - Required value"
@@ -24,18 +29,16 @@ show_help() {
     exit 1
 }
 
-# Print the message and exit the program.
-die() {
-    echo "*******************************************************************************"
-    echo "$(basename $0) ERROR: $*" >&2
-    echo "*******************************************************************************"
-    exit 1
-}
-
 log (){
     local logMsg="$1"
-    local logMsgDate="[`date '+%d%m%Y %T'`]"
+    local logMsgDate
+    logMsgDate="[$(date '+%d%m%Y %T')]"
     echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
+}
+
+log_json (){
+    local logMsg="$1"
+    echo -ne "$logMsg" >> "$JsonFileName"
 }
 
 add_parms() {
@@ -66,96 +69,241 @@ check_parm() {
 
 check_packages() {
     # Check Required Packages
-    local JQ="$(which jq)"
-    local CURL="$(which curl)"
+    local JQ
+    JQ="$(which jq)"
+    local CURL
+    CURL="$(which curl)"
 
     [ -x "${JQ}" ] || { echo "jq not found. Please install 'jq' package and try again." ; exit 1 ; }
     [ -x "${CURL}" ] || { echo "curl not found. Please install 'curl' package and try again." ; exit 1 ; }
 }
 
 check_conn() {
-    curl_timeout=$(curl -s -v -m 5 -x "" -o /dev/null http://"$MASKING_ENGINE" 2>&1 | grep "timed out")
-    if [[ "$curl_timeout" == *"timed out"* ]];
+    local MASKING_IP="$1"
+    local PROXY_BYPASS="$2"
+    local SECURE_CONN="$3"
+
+    local curl_conn
+    curl_conn="curl -s -v -m 5"
+
+    local URL
+
+    if [ "$SECURE_CONN" = true ]; then
+        URL="https://$MASKING_IP"
+    else
+        URL="http://$MASKING_IP"
+    fi
+
+    if [ "$PROXY_BYPASS" = true ]; then
+        curl_conn="$curl_conn -x ''"
+    fi
+
+    local curl_conn="$curl_conn -o /dev/null $URL 2>&1"
+    local curlResponse
+
+    curlResponse=$(eval "$curl_conn")
+
+    local curlError
+
+    if [[ "$curlResponse" == *"timed out"* ]];
     then
-       log "Error: $curl_timeout\n"
-       log "Please verify if the Masking IP Address $MASKING_ENGINE is correct.\n"
-       log "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_ENGINE and check the output to verify communications issues between this machine and the Masking Engine.\n"
+       curlError=$(echo "$curlResponse" | grep -o "Connection timed out")
+       echo "Error: $curlError Please verify if the Masking IP Address $MASKING_IP is correct or bypass proxy if needed with -x true option."
+       echo "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
+
+    if [[ "$curlResponse" == *"Connection refused"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "Connection refused")
+       echo "Error: $curlError - Please confirm the desired level of security for the connection (http/https) and ensure that $MASKING_IP is not blocked"
+       echo "Execute curl -s -v -m 5 -o /dev/null http://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
+
+    if [[ "$curlResponse" == *"307 Temporary Redirect"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "307 Temporary Redirect")
+       echo "Error: $curlError - Please verify if a secure connection (https) to the Masking Engine is required."
+       echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
        exit 1
     fi
 }
 
-# Check if $1 not empty. If so print out message specified in $2 and exit.
-check_response() {
-    local RESPONSE="$1"
-    local IGNORE="$2"
+split_response() {
+    local CURL_FULL_RESPONSE="$1"
 
-    if [ -z "$RESPONSE" ]; 
+    local line_break
+    line_break=$(echo "$CURL_FULL_RESPONSE" | awk -v RS='\r\n' '/^$/{print NR; exit;}')
+
+    CURL_HEADER_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR<LINE_BREAK{print $0}')
+    CURL_HEADER_RESPONSE=$(echo "$CURL_HEADER_RESPONSE" | awk '/^HTTP/{print $2}')
+    CURL_BODY_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR>LINE_BREAK{print $0}')
+}
+
+# Check if $1 not empty. If so print out message specified in $2 and exit.
+check_response_value() {
+    local RESPONSE_VALUE="$1"
+
+    if [ -z "$RESPONSE_VALUE" ];
     then
-       log "Check Response! No data\n"
-       if [[ "$IGNORE" == "false" ]];
-       then
-          dpxlogout
-          exit 1
-       fi
+        log "${FUNCNAME[0]}() -> No data in response body\n"
+        dpxlogout
+        exit 1
     fi
 }
 
-check_error() {
+check_response_error() {
     local FUNC="$1"
     local API="$2"
-    local RESPONSE="$3"
-    local IGNORE="$4"
+
+    local errorMessage
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
+    if [ "$(echo "$CURL_BODY_RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
-        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
-        if [[ "$IGNORE" == "false" ]];
+        if [[ ! "$FUNC" == "dpxlogin" ]];
         then
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
             dpxlogout
             exit 1
+        else
+            errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
+            echo "$errorMessage"
+            exit 1
         fi
+    else
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
     fi
 }
 
-# Login and set the correct $AUTH_HEADER.
+build_curl() {
+    local URL_BASE="$1"
+    local API="$2"
+    local METHOD="$3"
+    local AUTH="$4"
+    local CONTENT_TYPE="$5"
+    local KEEPALIVE="$6"
+    local PROXY_BYPASS="$7"
+    local SECURE_CONN="$8"
+    local FORM="$9"
+    local DATA="${10}"
+
+    if [ "$SECURE_CONN" = true ]; then
+        URL_BASE="https://$URL_BASE"
+    else
+        URL_BASE="http://$URL_BASE"
+    fi
+
+    curl_command="curl -X $METHOD"
+
+    if [ -n "$AUTH" ]; then
+        curl_command="$curl_command -H ''\"$AUTH\"''"
+    fi
+
+    curl_command="$curl_command -H 'Content-Type: $CONTENT_TYPE'"
+
+    if [ "$PROXY_BYPASS" = true ]; then
+        curl_command="$curl_command -x ''"
+    fi
+
+    curl_command="$curl_command --keepalive-time $KEEPALIVE"
+
+    if [ -n "$FORM" ]; then
+        curl_command="$curl_command -F '$FORM'"
+    fi
+
+    if [ -n "$DATA" ]; then
+        curl_command="$curl_command --data '$DATA'"
+    fi
+
+    if [ "$SECURE_CONN" = true ]; then
+        curl_command="$curl_command -k "
+    fi
+
+    curl_command="$curl_command -i -s $URL_BASE/$API"
+    log "$curl_command\n"
+}
+
+# Login
 dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
-    local FUNC='dpxlogin'
+
+    local FUNC="${FUNCNAME[0]}"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='login'
+    local METHOD="POST"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+
     local DATA="{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-    LOGIN_RESPONSE=$(curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API"
-    ) || die "Login failed with exit code $?"
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
-    TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.Authorization')
+    AUTH_HEADER=""
+
+    log "Logging in with $USERNAME ...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+
+    local LOGIN_RESPONSE
+    LOGIN_RESPONSE=$(eval "$curl_command")
+
+    split_response "$LOGIN_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
+    local LOGIN_VALUE
+    LOGIN_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+    check_response_value "$LOGIN_VALUE"
+
+    TOKEN=$(echo "$CURL_BODY_RESPONSE" | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
-    log "$MASKING_USERNAME logged in successfully\n"
+    log "$MASKING_USERNAME logged in successfully with token $TOKEN\n"
 }
 
 # Logout
 dpxlogout() {
-    local FUNC='dpxlogout'
+    local FUNC="${FUNCNAME[0]}"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
-    LOGOUT_RESPONSE=$(curl -X PUT -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" -s "$URL_BASE/$API")
-    log "$MASKING_USERNAME Logged out successfully\n"
+    local METHOD="PUT"
+    local CONTENT_TYPE="application/json"
+    local FORM=""
+    local DATA=""
+
+    if [ -n "$AUTH_HEADER" ]; then
+        log "Logging out ...\n"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        local LOGOUT_RESPONSE
+        LOGOUT_RESPONSE=$(eval "$curl_command")
+        split_response "$LOGOUT_RESPONSE"
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
+        log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
+    fi
 }
 
 get_frameworks() {
-    local mask_type="STRING"
     local page_number="1"
-    local page_size="64"
+    local page_size="256"
     local include_schema="true"
-    local FUNC='get_frameworks'
-    local API='algorithm/frameworks'
-    # local DATA="{\"mask_type\": \"$mask_type\", \"include_schema\": $include_schema, \"page_number\": $page_number, \"page_size\": $page_size}"
-    local DATA="{\"include_schema\": $include_schema, \"page_number\": $page_number, \"page_size\": $page_size}"
+    local FUNC="${FUNCNAME[0]}"
+    local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
+    local API="algorithm/frameworks/?include_schema=$include_schema&page_number=$page_number&page_size=$page_size"
+    local METHOD="GET"
+    local AUTH="$AUTH_HEADER"
+    local CONTENT_TYPE="application/json"
+    local FORM
+    local DATA
 
-    local GET_FRAMEWORK_RESPONSE=$(curl -X GET -H ''"$AUTH_HEADER"'' -H 'Content-Type: application/json' -x "" --keepalive-time "$KEEPALIVE" --data "$DATA" -s "$URL_BASE/$API")
-    check_error "$FUNC" "$API" "$GET_FRAMEWORK_RESPONSE" "$IGN_ERROR"
-    GET_FRAMEWORK_VALUE=$(echo "$GET_FRAMEWORK_RESPONSE" | jq -r '.responseList')
-    check_response "$GET_FRAMEWORK_VALUE" "$IGN_ERROR"
-    log "$GET_FRAMEWORK_VALUE\n"
+    log "Getting frameworks...\n"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    local GET_FRAMEWORK_RESPONSE
+    GET_FRAMEWORK_RESPONSE=$(eval "$curl_command")
+
+    split_response "$GET_FRAMEWORK_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
+    GET_FRAMEWORK_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
+    check_response_value "$GET_FRAMEWORK_VALUE"
+    log_json "$GET_FRAMEWORK_VALUE"
 }
 
 check_packages
@@ -170,6 +318,12 @@ do
     case "$arg" in
         --log-file)
             args="${args}-o "
+            ;;
+        --proxy-bypass)
+            args="${args}-x "
+            ;;
+        --http-secure)
+            args="${args}-k "
             ;;
         --masking-engine)
             args="${args}-m "
@@ -188,26 +342,34 @@ do
     esac
 done
 
-eval set -- $args
+eval set -- "$args"
 
-while getopts ":h:o:m:u:p:" PARAMETERS; do
+while getopts ":h:o:x:k:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
         o)
-        	logFileName=${OPTARG[@]}
+        	logFileName=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        x)
+        	PROXY_BYPASS=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        k)
+        	SECURE_CONN=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         m)
-        	MASKING_ENGINE=${OPTARG[@]}
+        	MASKING_ENGINE=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         u)
-        	MASKING_USERNAME=${OPTARG[@]}
+        	MASKING_USERNAME=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         p)
-        	MASKING_PASSWORD=${OPTARG[@]}
+        	MASKING_PASSWORD=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         :) echo "Option -$OPTARG requires an argument."; exit 1;;
@@ -218,13 +380,11 @@ done
 # Check all parameters
 check_parm "$ALLPARMS"
 
-# Update URL
-URL_BASE="http://${MASKING_ENGINE}/masking/api/v5.1.22"
-
 # Check connection
-check_conn
+check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
 
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-log "Getting frameworks...\n"
+
 get_frameworks
+
 dpxlogout
