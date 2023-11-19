@@ -12,7 +12,7 @@ LDAP_BASEDN='DC=candy,DC=com,DC=ar'
 LDAP_FILTER='(&(objectClass=person)(sAMAccountName=?))'
 LDAP_DOMAIN='CANDY'
 LDAP_TLS='false'
-LDAP_STATUS='false'
+LDAP_ENABLED='false'
 NOASK='no'
 NOROLLBACK='no'
 KEEPALIVE=600
@@ -173,7 +173,7 @@ check_response_value() {
 
     if [ -z "$RESPONSE_VALUE" ];
     then
-        log "${FUNCNAME[0]}() -> No data in response variable\n"
+        log "${FUNCNAME[0]}() -> No data in response body\n"
         dpxlogout
         exit 1
     fi
@@ -257,7 +257,7 @@ dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='dpxlogin'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='login'
     local METHOD="POST"
@@ -287,7 +287,7 @@ dpxlogin() {
 
 # Logout
 dpxlogout() {
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='dpxlogout'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
@@ -312,7 +312,7 @@ get_ldap_config() {
     local page_number=1
     local page_size=10
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='get_ldap_config'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API="application-settings?setting_group=$setting_group&page_number=$page_number&page_size=$page_size"
     local METHOD="GET"
@@ -376,7 +376,7 @@ get_ldap_config() {
 set_ldap_server() {
     local LDAP_SERVER="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_server'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/31'
     local METHOD="PUT"
@@ -405,7 +405,7 @@ set_ldap_server() {
 set_ldap_port() {
     local LDAP_PORT="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_port'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/32'
     local METHOD="PUT"
@@ -435,7 +435,7 @@ set_ldap_port() {
 set_ldap_baseDN() {
     local LDAP_BASEDN="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_baseDN'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/33'
     local METHOD="PUT"
@@ -465,7 +465,7 @@ set_ldap_baseDN() {
 set_ldap_filter() {
     local LDAP_FILTER="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_filter'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/34'
     local METHOD="PUT"
@@ -495,7 +495,7 @@ set_ldap_filter() {
 set_ldap_domain() {
     local LDAP_DOMAIN="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_domain'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/35'
     local METHOD="PUT"
@@ -525,7 +525,7 @@ set_ldap_domain() {
 set_ldap_tls() {
     local LDAP_TLS="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_tls'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/51'
     local METHOD="PUT"
@@ -555,7 +555,7 @@ set_ldap_tls() {
 set_ldap_status() {
     local LDAP_STATUS="$1"
 
-    local FUNC="${FUNCNAME[0]}"
+    local FUNC='set_ldap_status'
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='application-settings/30'
     local METHOD="PUT"

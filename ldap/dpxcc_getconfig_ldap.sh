@@ -35,7 +35,6 @@ log (){
     echo -ne "$logMsgDate $logMsg" >> "$logFileName"
 }
 
-
 msg_box() {
     ALLMSG="$ALLMSG""$1"
 }
@@ -233,7 +232,7 @@ dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
 
-    local FUNC='dpxlogin'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='login'
     local METHOD="POST"
@@ -263,7 +262,7 @@ dpxlogin() {
 
 # Logout
 dpxlogout() {
-    local FUNC='dpxlogout'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
@@ -288,14 +287,14 @@ get_ldap_config() {
     local page_number=1
     local page_size=10
 
-    local FUNC='get_ldap_config'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API="application-settings?setting_group=$setting_group&page_number=$page_number&page_size=$page_size"
     local METHOD="GET"
     local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
-    local FORM=""
-    local DATA=""
+    local FORM
+    local DATA
 
     local settingName
     local settingValue
