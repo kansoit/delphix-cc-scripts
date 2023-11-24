@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-apiVer="v5.1.27"
+apiVer="v5.1.28"
 MASKING_ENGINE=""
 MASKING_USERNAME=""
 MASKING_PASSWORD=""
@@ -10,7 +10,7 @@ KEEPALIVE=600
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_getconfig_ldap_$logFileDate.log"
 PROXY_BYPASS=true
-SECURE_CONN=false
+HttpsInsecure=false
 
 
 show_help() {
@@ -18,7 +18,7 @@ show_help() {
     echo "Options:"
     echo "  --log-file        -o    Log file name                - Default Value: Current date_time.log"
     echo "  --proxy-bypass    -x    Proxy ByPass                 - Default: true"
-    echo "  --http-secure     -k    (http/https)                 - Default: false"
+    echo "  --https-insecure  -k    Make Https insecure          - Default: false"
     echo "  --masking-engine  -m    Masking Engine Address       - Required value"
     echo "  --masking-user    -u    Masking Engine User Name     - Required value"
     echo "  --masking-pwd     -p    Masking Engine Password      - Required value"
@@ -82,14 +82,14 @@ check_packages() {
 check_conn() {
     local MASKING_IP="$1"
     local PROXY_BYPASS="$2"
-    local SECURE_CONN="$3"
+    local HttpsInsecure="$3"
 
     local curl_conn
     curl_conn="curl -s -v -m 5"
 
     local URL
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL="https://$MASKING_IP"
     else
         URL="http://$MASKING_IP"
@@ -187,11 +187,11 @@ build_curl() {
     local CONTENT_TYPE="$5"
     local KEEPALIVE="$6"
     local PROXY_BYPASS="$7"
-    local SECURE_CONN="$8"
+    local HttpsInsecure="$8"
     local FORM="$9"
     local DATA="${10}"
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL_BASE="https://$URL_BASE"
     else
         URL_BASE="http://$URL_BASE"
@@ -219,7 +219,7 @@ build_curl() {
         curl_command="$curl_command --data '$DATA'"
     fi
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         curl_command="$curl_command -k "
     fi
 
@@ -243,7 +243,7 @@ dpxlogin() {
     AUTH_HEADER=""
 
     log "Logging in with $USERNAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LOGIN_RESPONSE
     LOGIN_RESPONSE=$(eval "$curl_command")
@@ -272,7 +272,7 @@ dpxlogout() {
 
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
-        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
         local LOGOUT_RESPONSE
         LOGOUT_RESPONSE=$(eval "$curl_command")
         split_response "$LOGOUT_RESPONSE"
@@ -300,7 +300,7 @@ get_ldap_config() {
     local settingValue
 
     log "Getting LDAP Parameters ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_CONFIG_RESPONSE
     LDAP_CONFIG_RESPONSE=$(eval "$curl_command")
@@ -399,7 +399,7 @@ while getopts ":h:o:x:k:m:u:p:" PARAMETERS; do
         	add_parms "$PARAMETERS";
         	;;
         k)
-        	SECURE_CONN=${OPTARG[*]}
+        	HttpsInsecure=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -423,7 +423,7 @@ done
 check_parm "$ALLPARMS"
 
 # Check connection
-check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
+check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 

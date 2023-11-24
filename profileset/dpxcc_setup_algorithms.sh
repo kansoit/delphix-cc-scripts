@@ -12,7 +12,7 @@ KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_setup_algorithms_$logFileDate.log"
 PROXY_BYPASS=true
-SECURE_CONN=false
+HttpsInsecure=false
 
 
 show_help() {
@@ -22,7 +22,7 @@ show_help() {
     echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default: false"
     echo "  --log-file          -o  Log file name                         - Default: Current date_time.log"
     echo "  --proxy-bypass      -x  Proxy ByPass                          - Default: true"
-    echo "  --http-secure       -k  (http/https)                          - Default: false"
+    echo "  --https-insecure    -k  Make Https Insecure                   - Default: false"
     echo "  --masking-engine    -m  Masking Engine Address                - Required value"
     echo "  --masking-username  -u  Masking Engine User Name              - Required value"
     echo "  --masking-pwd       -p  Masking Engine Password               - Required value"
@@ -78,14 +78,14 @@ check_packages() {
 check_conn() {
     local MASKING_IP="$1"
     local PROXY_BYPASS="$2"
-    local SECURE_CONN="$3"
+    local HttpsInsecure="$3"
 
     local curl_conn
     curl_conn="curl -s -v -m 5"
 
     local URL
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL="https://$MASKING_IP"
     else
         URL="http://$MASKING_IP"
@@ -210,11 +210,11 @@ build_curl() {
     local CONTENT_TYPE="$5"
     local KEEPALIVE="$6"
     local PROXY_BYPASS="$7"
-    local SECURE_CONN="$8"
+    local HttpsInsecure="$8"
     local FORM="$9"
     local DATA="${10}"
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL_BASE="https://$URL_BASE"
     else
         URL_BASE="http://$URL_BASE"
@@ -242,7 +242,7 @@ build_curl() {
         curl_command="$curl_command --data '$DATA'"
     fi
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         curl_command="$curl_command -k "
     fi
 
@@ -266,7 +266,7 @@ dpxlogin() {
     AUTH_HEADER=""
 
     log "Logging in with $USERNAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LOGIN_RESPONSE
     LOGIN_RESPONSE=$(eval "$curl_command")
@@ -295,7 +295,7 @@ dpxlogout() {
 
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
-        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
         local LOGOUT_RESPONSE
         LOGOUT_RESPONSE=$(eval "$curl_command")
         split_response "$LOGOUT_RESPONSE"
@@ -317,7 +317,7 @@ upload_files() {
     local DATA=""
 
     log "Uploading file $FILE_NAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
     local FILE_UPLOAD_RESPONSE
     FILE_UPLOAD_RESPONSE=$(eval "$curl_command")
 
@@ -370,7 +370,7 @@ add_algorithm() {
     DATA=$(echo "$FullJson" | jq -c)
 
     log "Adding Algorithm $algorithmName using FrameworkId: $frameworkId PluginId: $pluginId ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
     local ADD_ALGO_RESPONSE
     ADD_ALGO_RESPONSE=$(eval "$curl_command")
 
@@ -402,7 +402,7 @@ get_frameworks() {
     local DATA
 
     log "Getting frameworks...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
     local GET_FRAMEWORK_RESPONSE
     GET_FRAMEWORK_RESPONSE=$(eval "$curl_command")
 
@@ -488,7 +488,7 @@ while getopts ":h:a:i:o:x:k:m:u:p:" PARAMETERS; do
         	add_parms "$PARAMETERS";
         	;;
         k)
-        	SECURE_CONN=${OPTARG[*]}
+        	HttpsInsecure=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -512,7 +512,7 @@ done
 check_parm "$ALLPARMS"
 
 # Check connection
-check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
+check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 
 check_file "$ALGO_FILE" "$IGN_ERROR"
 
