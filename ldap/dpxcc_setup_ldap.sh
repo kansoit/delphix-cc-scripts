@@ -19,7 +19,7 @@ KEEPALIVE=600
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_setup_ldap_$logFileDate.log"
 PROXY_BYPASS=true
-SECURE_CONN=false
+HttpsInsecure=false
 
 
 show_help() {
@@ -34,7 +34,7 @@ show_help() {
     echo "  --ldap-enabled    -e    Enable LDAP (true/false)     - Default: false"
     echo "  --log-file        -o    Log file name                - Default Value: Current date_time.log"
     echo "  --proxy-bypass    -x    Proxy ByPass                 - Default: true"
-    echo "  --http-secure     -k    (http/https)                 - Default: false"
+    echo "  --https-insecure  -k    Make Https Insecure          - Default: false"
     echo "  --masking-engine  -m    Masking Engine Address       - Required value"
     echo "  --masking-user    -u    Masking Engine User Name     - Required value"
     echo "  --masking-pwd     -p    Masking Engine Password      - Required value"
@@ -107,14 +107,14 @@ check_packages() {
 check_conn() {
     local MASKING_IP="$1"
     local PROXY_BYPASS="$2"
-    local SECURE_CONN="$3"
+    local HttpsInsecure="$3"
 
     local curl_conn
     curl_conn="curl -s -v -m 5"
 
     local URL
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL="https://$MASKING_IP"
     else
         URL="http://$MASKING_IP"
@@ -212,11 +212,11 @@ build_curl() {
     local CONTENT_TYPE="$5"
     local KEEPALIVE="$6"
     local PROXY_BYPASS="$7"
-    local SECURE_CONN="$8"
+    local HttpsInsecure="$8"
     local FORM="$9"
     local DATA="${10}"
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         URL_BASE="https://$URL_BASE"
     else
         URL_BASE="http://$URL_BASE"
@@ -244,7 +244,7 @@ build_curl() {
         curl_command="$curl_command --data '$DATA'"
     fi
 
-    if [ "$SECURE_CONN" = true ]; then
+    if [ "$HttpsInsecure" = true ]; then
         curl_command="$curl_command -k "
     fi
 
@@ -268,7 +268,7 @@ dpxlogin() {
     AUTH_HEADER=""
 
     log "Logging in with $USERNAME ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LOGIN_RESPONSE
     LOGIN_RESPONSE=$(eval "$curl_command")
@@ -297,7 +297,7 @@ dpxlogout() {
 
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
-        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+        build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
         local LOGOUT_RESPONSE
         LOGOUT_RESPONSE=$(eval "$curl_command")
         split_response "$LOGOUT_RESPONSE"
@@ -325,7 +325,7 @@ get_ldap_config() {
     local settingValue
 
     log "Getting LDAP Parameters ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_CONFIG_RESPONSE
     LDAP_CONFIG_RESPONSE=$(eval "$curl_command")
@@ -387,7 +387,7 @@ set_ldap_server() {
     local DATA="{\"settingValue\": \"$LDAP_SERVER\"}"
 
     log "Setting LDAP Server Name/Ip ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
     local LDAP_SERVER_RESPONSE
     LDAP_SERVER_RESPONSE=$(eval "$curl_command")
 
@@ -416,7 +416,7 @@ set_ldap_port() {
     local DATA="{\"settingValue\": \"$LDAP_PORT\"}"
 
     log "Setting LDAP Port Number ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_PORT_RESPONSE
     LDAP_PORT_RESPONSE=$(eval "$curl_command")
@@ -446,7 +446,7 @@ set_ldap_baseDN() {
     local DATA="{\"settingValue\": \"$LDAP_BASEDN\"}"
 
     log "Setting LDAP BaseDN ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_BASEDN_RESPONSE
     LDAP_BASEDN_RESPONSE=$(eval "$curl_command")
@@ -476,7 +476,7 @@ set_ldap_filter() {
     local DATA="{\"settingValue\": \"$LDAP_FILTER\"}"
 
     log "Setting LDAP Filter ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_FILTER_RESPONSE
     LDAP_FILTER_RESPONSE=$(eval "$curl_command")
@@ -506,7 +506,7 @@ set_ldap_domain() {
     local DATA="{\"settingValue\": \"$LDAP_DOMAIN\"}"
 
     log "Setting LDAP Domain Name ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_DOMAIN_RESPONSE
     LDAP_DOMAIN_RESPONSE=$(eval "$curl_command")
@@ -536,7 +536,7 @@ set_ldap_tls() {
     local DATA="{\"settingValue\": \"$LDAP_TLS\"}"
 
     log "Setting LDAP TLS enabled ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_TLS_RESPONSE
     LDAP_TLS_RESPONSE=$(eval "$curl_command")
@@ -566,7 +566,7 @@ set_ldap_status() {
     local DATA="{\"settingValue\": \"$LDAP_STATUS\"}"
 
     log "Setting LDAP Status ...\n"
-    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$SECURE_CONN" "$FORM" "$DATA"
+    build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
 
     local LDAP_STATUS_RESPONSE
     LDAP_STATUS_RESPONSE=$(eval "$curl_command")
@@ -688,7 +688,7 @@ while getopts ":h:s:t:b:d:l:f:e:o:x:k:m:u:p:a:r:" PARAMETERS; do
         	add_parms "$PARAMETERS";
         	;;
         k)
-        	SECURE_CONN=${OPTARG[*]}
+        	HttpsInsecure=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         m)
@@ -720,7 +720,7 @@ done
 check_parm "$ALLPARMS"
 
 # Check connection
-check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$SECURE_CONN"
+check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 
 if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --backtitle "Delphix LDAP Configurator" \

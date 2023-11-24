@@ -19,7 +19,7 @@
 #    --ignore-errors          -i Ignore errors while adding domains/express/algorithms              false
 #    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
-#    --http-secure            -k (http/https)                                                       false
+#    --https-insecure         -k Make Https Insecure                                                false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
 #    --masking-user           -u Masking Engine User Name                                           Required Value
 #    --masking-pwd            -p Password                                                           Required Value
@@ -39,7 +39,7 @@
 #    --ignore-errors       -i    Ignore errors while adding Algorithms                              false
 #    --log-file            -o    Log file name                                                      Current date_time.log"
 #    --proxy-bypass        -x    Proxy ByPass                                                       true
-#    --http-secure         -k    (http/https)                                                       false
+#    --https-insecure      -k    Make Https Insecure                                                false
 #    --masking-engine      -m    Masking Engine Address                                             Required value
 #    --masking-username    -u    Masking Engine User Name                                           Required value
 #    --masking-pwd         -p    Masking Engine Password                                            Required value

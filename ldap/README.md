@@ -18,7 +18,7 @@
 #    --ldap-enabled           -e LDAP Enabled                                                       false
 #    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
-#    --http-secure            -k (http/https)                                                       false
+#    --https-insecure         -k Make Https Insecure                                                false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
 #    --masking-user           -u Masking Engine User Name                                           Required Value
 #    --masking-pwd            -p Password                                                           Required Value
@@ -37,7 +37,7 @@
 #    --------------------- ----- ------------------------------------------------------------------ --------------
 #    --log-file               -o Log file name                                                      Current date_time.log"
 #    --proxy-bypass           -x Proxy ByPass                                                       true
-#    --http-secure            -k (http/https)                                                       false
+#    --https-insecure         -k Make Https Insecure                                                false
 #    --masking-engine         -m Masking Engine Address                                             Required Value
 #    --masking-user           -u Masking Engine User Name                                           Required Value
 #    --masking-pwd            -p Password                                                           Required Value
