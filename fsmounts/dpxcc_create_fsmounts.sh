@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 
-apiVer="v5.1.22"
+apiVer="v5.1.28"
 MASKING_ENGINE=""
 MASKING_USERNAME=""
 MASKING_PASSWORD=""
@@ -122,6 +122,14 @@ check_conn() {
        echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
        exit 1
     fi
+
+    if [[ "$curlResponse" == *"Could not resolve host"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "Could not resolve host")
+       echo "Error: $curlError - Please verify if the Masking Engine name is correct."
+       echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
 }
 
 check_file() {
@@ -133,29 +141,51 @@ check_file() {
     fi
 }
 
-# Check if $1 not empty. If so print out message specified in $2 and exit.
-check_response() {
-    local RESPONSE="$1"
+split_response() {
+    local CURL_FULL_RESPONSE="$1"
 
-    if [ -z "$RESPONSE" ];
+    local line_break
+    line_break=$(echo "$CURL_FULL_RESPONSE" | awk -v RS='\r\n' '/^$/{print NR; exit;}')
+
+    CURL_HEADER_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR<LINE_BREAK{print $0}')
+    CURL_HEADER_RESPONSE=$(echo "$CURL_HEADER_RESPONSE" | awk '/^HTTP/{print $2}')
+    CURL_BODY_RESPONSE=$(echo "$CURL_FULL_RESPONSE" | awk -v LINE_BREAK="$line_break" 'NR>LINE_BREAK{print $0}')
+}
+
+# Check if $1 not empty. If so print out message specified in $2 and exit.
+check_response_value() {
+    local RESPONSE_VALUE="$1"
+
+    if [ -z "$RESPONSE_VALUE" ];
     then
-       log "Check Response! No data\n"
-       dpxlogout
-       exit 1
+        log "${FUNCNAME[0]}() -> No data in response body\n"
+        dpxlogout
+        exit 1
     fi
 }
 
-check_error() {
+check_response_error() {
     local FUNC="$1"
     local API="$2"
-    local RESPONSE="$3"
+
+    local errorMessage
 
     # jq returns a literal null so we have to check against that...
-    if [ "$(echo "$RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
+    if [ "$(echo "$CURL_BODY_RESPONSE" | jq -r 'if type=="object" then .errorMessage else "null" end')" != 'null' ];
     then
-        log "Check Error! Function: $FUNC Api_Endpoint: $API Req_Response=$RESPONSE\n"
-        dpxlogout
-        exit 1
+        if [[ ! "$FUNC" == "dpxlogin" ]];
+        then
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
+            dpxlogout
+            exit 1
+        else
+            errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+            log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
+            echo "$errorMessage"
+            exit 1
+        fi
+    else
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
     fi
 }
 
@@ -203,15 +233,16 @@ build_curl() {
         curl_command="$curl_command -k "
     fi
 
-    curl_command="$curl_command -s $URL_BASE/$API"
+    curl_command="$curl_command -i -s $URL_BASE/$API"
     log "$curl_command\n"
 }
 
+# Login
 dpxlogin() {
     local USERNAME="$1"
     local PASSWORD="$2"
 
-    local FUNC='dpxlogin'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='login'
     local METHOD="POST"
@@ -223,19 +254,25 @@ dpxlogin() {
 
     log "Logging in with $USERNAME ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
+
     local LOGIN_RESPONSE
     LOGIN_RESPONSE=$(eval "$curl_command")
-    check_error "$FUNC" "$API" "$LOGIN_RESPONSE"
+
+    split_response "$LOGIN_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
     local LOGIN_VALUE
-    LOGIN_VALUE=$(echo "$LOGIN_RESPONSE" | jq -r '.errorMessage')
-    check_response "$LOGIN_VALUE"
-    TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.Authorization')
+    LOGIN_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
+    check_response_value "$LOGIN_VALUE"
+
+    TOKEN=$(echo "$CURL_BODY_RESPONSE" | jq -r '.Authorization')
     AUTH_HEADER="Authorization: $TOKEN"
     log "$MASKING_USERNAME logged in successfully with token $TOKEN\n"
 }
 
+# Logout
 dpxlogout() {
-    local FUNC='dpxlogout'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='logout'
     local METHOD="PUT"
@@ -246,7 +283,10 @@ dpxlogout() {
     if [ -n "$AUTH_HEADER" ]; then
         log "Logging out ...\n"
         build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH_HEADER" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
-        eval "$curl_command"
+        local LOGOUT_RESPONSE
+        LOGOUT_RESPONSE=$(eval "$curl_command")
+        split_response "$LOGOUT_RESPONSE"
+        log "Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
         log "$MASKING_USERNAME Logged out successfully with token $TOKEN\n"
     fi
 }
@@ -259,7 +299,7 @@ create_fsmounts() {
     local options="$5"
     local connectOnStartup="$6"
 
-    local FUNC='create_fsmounts'
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
     local API='mount-filesystem'
     local METHOD="POST"
@@ -275,15 +315,19 @@ create_fsmounts() {
 
     log "Creating fsmount $mountName ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
+
     local CREATE_FSMOUNT_RESPONSE
     CREATE_FSMOUNT_RESPONSE=$(eval "$curl_command")
-    check_error "$FUNC" "$API" "$CREATE_FSMOUNT_RESPONSE"
+
+    split_response "$CREATE_FSMOUNT_RESPONSE"
+    check_response_error "$FUNC" "$API"
+
     local CREATE_FSMOUNT_VALUE
-    CREATE_FSMOUNT_VALUE=$(echo "$CREATE_FSMOUNT_RESPONSE" | jq -r '.mountName')
-    check_response "$CREATE_FSMOUNT_VALUE"
+    CREATE_FSMOUNT_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.mountName')
+    check_response_value "$CREATE_FSMOUNT_VALUE"
 
     local MOUNTID_VALUE
-    MOUNTID_VALUE=$(echo "$CREATE_FSMOUNT_RESPONSE" | jq -r '.mountId')
+    MOUNTID_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.mountId')
 
     if [ ! "$CREATE_FSMOUNT_VALUE" == "null" ]; then
         log "FS Mount: $CREATE_FSMOUNT_VALUE added with mountId: $MOUNTID_VALUE.\n"
@@ -380,7 +424,6 @@ check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 check_file "$FSMOUNTS_FILE"
 
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
-
 
 while IFS=\; read -r mountName hostAddress mountPath type options algorithmExtension connectOnStartup
 do
