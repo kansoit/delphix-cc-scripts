@@ -154,6 +154,14 @@ check_conn() {
        echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
        exit 1
     fi
+
+    if [[ "$curlResponse" == *"Could not resolve host"* ]];
+    then
+       curlError=$(echo "$curlResponse" | grep -o "Could not resolve host")
+       echo "Error: $curlError - Please verify if the Masking Engine name is correct."
+       echo "Execute curl -s -v -m 5 -o /dev/null https://$MASKING_IP and check the output to verify communications issues between $HOSTNAME and the Masking Engine."
+       exit 1
+    fi
 }
 
 split_response() {
@@ -727,6 +735,10 @@ if dialog --stdout --no-collapse --title "Change LDAP Parameters" \
           --yesno "Yes: Apply new LDAP parameters No:  Quit safely!" 5 60; then
 
    dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
+
+   dialog --stdout --no-collapse --title "Change LDAP Parameters" \
+          --backtitle "Delphix LDAP Configurator" \
+          --no-ok --infobox "Setting up LDAP Parameters. Please wait ..." 5 60
 
    msg_box "\n"
    msg_box "Current LDAP parameters\n"
