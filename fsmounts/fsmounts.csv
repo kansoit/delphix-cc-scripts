@@ -1,2 +1,3 @@
 # mountName;hostAddress;mountPath;type;options;connectOnStartup
-Delphix_Files;LAB-MSSQL;/Delphix;CIFS;username=<UserName>,password=<Password>,domain=<DomainName>;true
+Delphix_Source;Your-MSServer;/Delphix_Src;CIFS;username=Your-User,password=Your-Pwd,domain=Your-Domain;true
+Delphix_Target;Your-MSServer;/Delphix_Tgt;CIFS;username=Your-User,password=Your-Pwd,domain=Your-Domain;true
