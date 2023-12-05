@@ -12,8 +12,8 @@
 #    Parameter             Short Description                                                        Default
 #    --------------------- ----- ------------------------------------------------------------------ --------------
 #    --profile-name           -f Profile name                                                       Required Value
-#    --expressions-file       -e CSV file: ExpressionName;DomainName;level;Regex                    expressions.csv
-#    --domains-file           -d CSV file: domainName;defaultAlgorithmCode;defaultTokenizationCode  domains.csv
+#    --expressions-file       -e CSV file: Expressions file                                         expressions.csv
+#    --domains-file           -d CSV file: Domains file                                             domains.csv
 #    --algorithms-file        -a CSV file: Algorithms file                                          algorithms.csv
 #    --exe-algorithms         -r Execute Algorithms Setup                                           true
 #    --ignore-errors          -i Ignore errors while adding domains/express/algorithms              false
@@ -25,7 +25,7 @@
 #    --masking-pwd            -p Password                                                           Required Value
 #    --help                   -h help
 #
-#    Example: dpxcc_setup_profileset.sh -p <PROFILE> -m  <Masking IP> -u <Masking User> -p <Masking Password>
+#    Example: dpxcc_setup_profileset.sh -p <PROFILE> -m <Masking IP> -u <Masking User> -p <Masking Password>
 #
 # dpxcc_setup_algorithms.sh
 # Created: Horacio Dos - 10/2023
@@ -46,5 +46,27 @@
 #    --help                -h    Show this help
 #     
 #    Example: dpxcc_setup_algorithms.sh -m <MASKING IP> -u <MASKING User> -p <MASKING Password>
+#
+# dpxcc_setup_domains.sh
+# Created: Horacio Dos - 12/2023
+# Parameters:
+#
+#   dpxcc_setup_domains.sh --help
+#
+#    Parameter             Short Description                                                        Default
+#    --------------------- ----- ------------------------------------------------------------------ --------------
+#    --domains-file           -d CSV file: Domains File                                             domains.csv
+#    --algorithms-file        -a CSV file: Algorithms file                                          algorithms.csv
+#    --exe-algorithms         -r Execute Algorithms Setup                                           true
+#    --ignore-errors          -i Ignore errors while adding domains/algorithms                      false
+#    --log-file               -o Log file name                                                      Current date_time.log"
+#    --proxy-bypass           -x Proxy ByPass                                                       true
+#    --https-insecure         -k Make Https Insecure                                                false
+#    --masking-engine         -m Masking Engine Address                                             Required Value
+#    --masking-user           -u Masking Engine User Name                                           Required Value
+#    --masking-pwd            -p Password                                                           Required Value
+#    --help                   -h help
+#
+#    Example: dpxcc_setup_domains.sh -m <Masking IP> -u <Masking User> -p <Masking Password>
 #
 ```
