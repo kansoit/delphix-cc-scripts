@@ -8,27 +8,27 @@ MASKING_PASSWORD=""
 URL_BASE=""
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
-logFileName="dpxcc_get_frameworks_$logFileDate.log"
+logFileName="dpxcc_get_domains_$logFileDate.log"
 OutputFileType="json"
-OutputFileName="frameworks_$logFileDate"
+OutputFileName="domains_$logFileDate"
 PROXY_BYPASS=true
 HttpsInsecure=false
 
 
 show_help() {
-    echo "Usage: dpxcc_get_frameworks.sh [options]"
+    echo "Usage: dpxcc_get_domains.sh [options]"
     echo "Options:"
-    echo "  --log-file          -l  Log file name            - Default Value: Current date_time.log"
+    echo "  --log-file          -l  Log file name              - Default Value: Current date_time.log"
     echo "  --output-file       -o  Output filename            - Default Value: Current date_time.json/csv"
     echo "  --output-type       -t  Output filetype (json/csv) - Default Value: json"
-    echo "  --proxy-bypass      -x  Proxy ByPass             - Default: true"
-    echo "  --https-insecure    -k  Make Https Insecure      - Default: false"
-    echo "  --masking-engine    -m  Masking Engine Address   - Required value"
-    echo "  --masking-username  -u  Masking Engine User Name - Required value"
-    echo "  --masking-pwd       -p  Masking Engine Password  - Required value"
+    echo "  --proxy-bypass      -x  Proxy ByPass               - Default: true"
+    echo "  --https-insecure    -k  Make Https Insecure        - Default: false"
+    echo "  --masking-engine    -m  Masking Engine Address     - Required value"
+    echo "  --masking-username  -u  Masking Engine User Name   - Required value"
+    echo "  --masking-pwd       -p  Masking Engine Password    - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_get_frameworks.sh -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
+    echo "dpxcc_get_domains.sh -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
     exit 1
 }
 
@@ -278,29 +278,31 @@ dpxlogout() {
     fi
 }
 
-get_frameworks() {
-    local page_number="1"
-    local page_size="256"
-    local include_schema="true"
+get_domains() {
+    local page_number=1
+    local page_size=256
+
     local FUNC="${FUNCNAME[0]}"
     local URL_BASE="$MASKING_ENGINE/masking/api/$apiVer"
-    local API="algorithm/frameworks/?include_schema=$include_schema&page_number=$page_number&page_size=$page_size"
+    local API="domains?page_number=$page_number&page_size=$page_size"
     local METHOD="GET"
     local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM
     local DATA
 
-    log "Getting frameworks...\n"
+    log "Getting Domains ...\n"
     build_curl "$URL_BASE" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM" "$DATA"
-    local GET_FRAMEWORK_RESPONSE
-    GET_FRAMEWORK_RESPONSE=$(eval "$curl_command")
 
-    split_response "$GET_FRAMEWORK_RESPONSE"
+    local GET_DOMAINS_RESPONSE
+    GET_DOMAINS_RESPONSE=$(eval "$curl_command")
+
+    split_response "$GET_DOMAINS_RESPONSE"
     check_response_error "$FUNC" "$API"
 
-    GET_FRAMEWORK_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
-    check_response_value "$GET_FRAMEWORK_VALUE"
+    local GET_DOMAINS_VALUE
+    GET_DOMAINS_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
+    check_response_value "$GET_DOMAINS_VALUE"
 }
 
 cvt_output() {
@@ -311,20 +313,20 @@ cvt_output() {
     OutputFileType="${OutputFileType,,}"
 
     if [ "$OutputFileType" == "csv" ]; then
-       echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
-       echo "frameworkId;frameworkName;frameworkType;description;extensionSchema" > "$CsvFileName"
-       
-       jq -r '.responseList[] | [
-           .frameworkId,
-           .frameworkName,
-           .frameworkType,
-           (.description | tostring | gsub(";";"")),
-           (.extensionSchema | tostring | gsub(";";""))
-           ]
-           | @tsv' "$JsonFileName" | tr '\t' ';' >> "$CsvFileName"
+        echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+        echo "domainName;createdBy;defaultAlgorithmCode" > "$CsvFileName"
+
+        jq -r '
+            .responseList[] | [
+                .domainName,
+                .createdBy,
+                .defaultAlgorithmCode
+             ]
+            | @tsv' "$JsonFileName" | tr '\t' ';' >> "$CsvFileName"
+
         rm "$JsonFileName"
     else
-       echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+        echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
     fi
 }
 
@@ -421,7 +423,7 @@ check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
-get_frameworks
+get_domains
 cvt_output
 
 dpxlogout
