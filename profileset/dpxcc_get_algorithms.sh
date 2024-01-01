@@ -9,7 +9,8 @@ URL_BASE=""
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_get_algorithms_$logFileDate.log"
-JsonFileName="dpxcc_get_algorithms_$logFileDate.json"
+OutputFileType="json"
+OutputFileName="algorithms_$logFileDate"
 PROXY_BYPASS=true
 HttpsInsecure=false
 
@@ -17,12 +18,14 @@ HttpsInsecure=false
 show_help() {
     echo "Usage: dpxcc_get_algorithms.sh [options]"
     echo "Options:"
-    echo "  --log-file          -o  Log file name            - Default Value: Current date_time.log"
-    echo "  --proxy-bypass      -x  Proxy ByPass             - Default: true"
-    echo "  --https-insecure    -k  Make Https Insecure      - Default: false"
-    echo "  --masking-engine    -m  Masking Engine Address   - Required value"
-    echo "  --masking-username  -u  Masking Engine User Name - Required value"
-    echo "  --masking-pwd       -p  Masking Engine Password  - Required value"
+    echo "  --log-file          -l  Log file name              - Default Value: Current date_time.log"
+    echo "  --output-file       -o  Output filename            - Default Value: Current date_time.json/csv"
+    echo "  --output-type       -t  Output filetype (json/csv) - Default Value: json"
+    echo "  --proxy-bypass      -x  Proxy ByPass               - Default: true"
+    echo "  --https-insecure    -k  Make Https Insecure        - Default: false"
+    echo "  --masking-engine    -m  Masking Engine Address     - Required value"
+    echo "  --masking-username  -u  Masking Engine User Name   - Required value"
+    echo "  --masking-pwd       -p  Masking Engine Password    - Required value"
     echo "  --help              -h  Show this help"
     echo "Example:"
     echo "dpxcc_get_algorithms.sh -m <MASKING IP> -u <MASKING User> -p <MASKING Password>"
@@ -34,11 +37,6 @@ log (){
     local logMsgDate
     logMsgDate="[$(date '+%d%m%Y %T')]"
     echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
-}
-
-log_json (){
-    local logMsg="$1"
-    echo -ne "$logMsg" >> "$JsonFileName"
 }
 
 add_parms() {
@@ -305,7 +303,39 @@ get_algorithms() {
     local GET_ALGO_VALUE
     GET_ALGO_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
     check_response_value "$GET_ALGO_VALUE"
-    log_json "$GET_ALGO_VALUE"
+}
+
+cvt_output() {
+    local CsvFileName
+    CsvFileName="$OutputFileName.csv"
+    local JsonFileName
+    JsonFileName="$OutputFileName.json"
+    # local TempFileName
+    # TempFileName="$OutputFileName.tmp"
+    OutputFileType="${OutputFileType,,}"
+
+    if [ "$OutputFileType" == "csv" ]; then
+        echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+        echo "algorithmName;algorithmType;createdBy;description;maskType;isTokenizationSupported;frameworkId;pluginId;algorithmExtension" > "$CsvFileName"
+
+        jq -r '
+          .responseList[] | [
+           .algorithmName,
+           .algorithmType,
+           .createdBy,
+           (.description | tostring | gsub(";";"")),
+           .maskType,
+           .isTokenizationSupported,
+           .frameworkId,
+           .pluginId, 
+           (.algorithmExtension | tostring | gsub(";";""))
+         ]
+         | @tsv' "$JsonFileName" | tr '\t' ';' >> "$CsvFileName"
+
+        rm "$JsonFileName"
+    else
+        echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+    fi
 }
 
 check_packages
@@ -319,7 +349,13 @@ do
     delim=""
     case "$arg" in
         --log-file)
+            args="${args}-l "
+            ;;
+        --output-file)
             args="${args}-o "
+            ;;
+        --output-type)
+            args="${args}-t "
             ;;
         --proxy-bypass)
             args="${args}-x "
@@ -346,12 +382,20 @@ done
 
 eval set -- "$args"
 
-while getopts ":h:o:x:k:m:u:p:" PARAMETERS; do
+while getopts ":h:l:o:t:x:k:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
-        o)
+        l)
         	logFileName=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        o)
+        	OutputFileName=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        t)
+        	OutputFileType=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         x)
@@ -388,5 +432,6 @@ check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 get_algorithms
+cvt_output
 
 dpxlogout

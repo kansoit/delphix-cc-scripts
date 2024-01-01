@@ -9,7 +9,8 @@ URL_BASE=""
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_get_frameworks_$logFileDate.log"
-JsonFileName="dpxcc_get_frameworks_$logFileDate.json"
+OutputFileType="json"
+OutputFileName="frameworks_$logFileDate"
 PROXY_BYPASS=true
 HttpsInsecure=false
 
@@ -17,7 +18,9 @@ HttpsInsecure=false
 show_help() {
     echo "Usage: dpxcc_get_frameworks.sh [options]"
     echo "Options:"
-    echo "  --log-file          -o  Log file name            - Default Value: Current date_time.log"
+    echo "  --log-file          -l  Log file name            - Default Value: Current date_time.log"
+    echo "  --output-file       -o  Output filename            - Default Value: Current date_time.json/csv"
+    echo "  --output-type       -t  Output filetype (json/csv) - Default Value: json"
     echo "  --proxy-bypass      -x  Proxy ByPass             - Default: true"
     echo "  --https-insecure    -k  Make Https Insecure      - Default: false"
     echo "  --masking-engine    -m  Masking Engine Address   - Required value"
@@ -34,11 +37,6 @@ log (){
     local logMsgDate
     logMsgDate="[$(date '+%d%m%Y %T')]"
     echo -ne "$logMsgDate $logMsg" | tee -a "$logFileName"
-}
-
-log_json (){
-    local logMsg="$1"
-    echo -ne "$logMsg" >> "$JsonFileName"
 }
 
 add_parms() {
@@ -303,7 +301,31 @@ get_frameworks() {
 
     GET_FRAMEWORK_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.responseList[]')
     check_response_value "$GET_FRAMEWORK_VALUE"
-    log_json "$GET_FRAMEWORK_VALUE"
+}
+
+cvt_output() {
+    local CsvFileName
+    CsvFileName="$OutputFileName.csv"
+    local JsonFileName
+    JsonFileName="$OutputFileName.json"
+    OutputFileType="${OutputFileType,,}"
+
+    if [ "$OutputFileType" == "csv" ]; then
+       echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+       echo "frameworkId;frameworkName;frameworkType;description;extensionSchema" > "$CsvFileName"
+       
+       jq -r '.responseList[] | [
+           .frameworkId,
+           .frameworkName,
+           .frameworkType,
+           (.description | tostring | gsub(";";"")),
+           (.extensionSchema | tostring | gsub(";";""))
+           ]
+           | @tsv' "$JsonFileName" | tr '\t' ';' >> "$CsvFileName"
+        rm "$JsonFileName"
+    else
+       echo "$CURL_BODY_RESPONSE" > "$JsonFileName"
+    fi
 }
 
 check_packages
@@ -317,7 +339,13 @@ do
     delim=""
     case "$arg" in
         --log-file)
+            args="${args}-l "
+            ;;
+        --output-file)
             args="${args}-o "
+            ;;
+        --output-type)
+            args="${args}-t "
             ;;
         --proxy-bypass)
             args="${args}-x "
@@ -344,12 +372,20 @@ done
 
 eval set -- "$args"
 
-while getopts ":h:o:x:k:m:u:p:" PARAMETERS; do
+while getopts ":h:l:o:t:x:k:m:u:p:" PARAMETERS; do
     case $PARAMETERS in
         h)
         	;;
-        o)
+        l)
         	logFileName=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        o)
+        	OutputFileName=${OPTARG[*]}
+        	add_parms "$PARAMETERS";
+        	;;
+        t)
+        	OutputFileType=${OPTARG[*]}
         	add_parms "$PARAMETERS";
         	;;
         x)
@@ -386,5 +422,6 @@ check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 dpxlogin "$MASKING_USERNAME" "$MASKING_PASSWORD"
 
 get_frameworks
+cvt_output
 
 dpxlogout
