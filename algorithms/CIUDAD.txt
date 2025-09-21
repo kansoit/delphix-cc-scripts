@@ -1,18 +1,18 @@
-Buenos Aires
-C¢rdoba
+ÔªøBuenos Aires
+C√≥rdoba
 Rosario
 La Plata
 Mar del Plata
-San Miguel de Tucum†n
+San Miguel de Tucum√°n
 Salta
 Santa Fe
 Corrientes
-Bah°a Blanca
+Bah√≠a Blanca
 Resistencia
 Posadas
 San Salvador de Jujuy
-Paran†
-NeuquÇn
+Paran√°
+Neuqu√©n
 Formosa
 San Fernando del Valle de Catamarca
 San Juan
@@ -22,7 +22,7 @@ La Rioja
 Rawson
 Viedma
 Ushuaia
-R°o Gallegos
+R√≠o Gallegos
 Comodoro Rivadavia
 Trelew
 Puerto Madryn
@@ -30,61 +30,61 @@ Esquel
 Rafaela
 Venado Tuerto
 Pergamino
-Jun°n
+Jun√≠n
 Tandil
-Olavarr°a
-Z†rate
+Olavarr√≠a
+Z√°rate
 Campana
 Pilar
-San Nicol†s de los Arroyos
+San Nicol√°s de los Arroyos
 San Pedro
 Mercedes
 Chivilcoy
 San Rafael
 Godoy Cruz
-GuaymallÇn
-Luj†n de Cuyo
+Guaymall√©n
+Luj√°n de Cuyo
 Mendoza
 Villa Mercedes
-Villa Mar°a
-R°o Cuarto
+Villa Mar√≠a
+R√≠o Cuarto
 Villa Carlos Paz
 Alta Gracia
 San Francisco
 Concordia
-Gualeguaych£
-Col¢n
+Gualeguaych√∫
+Col√≥n
 Villaguay
-Chajar°
+Chajar√≠
 Sunchales
 Reconquista
 Goya
 Paso de los Libres
 Eldorado
-Ober†
+Ober√°
 Clorinda
-Villa µngela
+Villa √Ångela
 Charata
-Presidencia Roque S†enz Pe§a
-Cutral C¢
+Presidencia Roque S√°enz Pe√±a
+Cutral C√≥
 Plottier
 Zapala
 General Roca
 Cipolletti
 Bariloche
-San Mart°n de los Andes
+San Mart√≠n de los Andes
 Villa La Angostura
-Puerto Iguaz£
+Puerto Iguaz√∫
 San Antonio Oeste
 Las Grutas
 Caleta Olivia
 Pico Truncado
-R°o Grande
+R√≠o Grande
 Tolhuin
 General Pico
 Santa Rosa
 Villa Regina
-Chascom£s
+Chascom√∫s
 Azul
 Balcarce
 Pinamar
@@ -94,7 +94,7 @@ Miramar
 San Bernardo
 Santa Teresita
 Lincoln
-Pehuaj¢
+Pehuaj√≥
 9 de Julio
-Coronel Su†rez
-San Mart°n
+Coronel Su√°rez
+San Mart√≠n

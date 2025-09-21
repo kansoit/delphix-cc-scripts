@@ -1,99 +1,99 @@
-Avenida Rivadavia 1234, Buenos Aires
-Calle San Martin 456, CÛrdoba
+ÔªøAvenida Rivadavia 1234, Buenos Aires
+Calle San Mart√≠n 456, C√≥rdoba
 Avenida Corrientes 789, Buenos Aires
-Boulevard OroÒo 1520, Rosario
+Boulevard Oro√±o 1520, Rosario
 Calle Belgrano 2345, Mendoza
-Avenida ColÛn 876, CÛrdoba
+Avenida Col√≥n 876, C√≥rdoba
 Calle Mitre 321, Salta
 Avenida Pellegrini 1450, Rosario
 Calle Lavalle 2100, Buenos Aires
 Avenida Santa Fe 3500, Buenos Aires
 Calle Moreno 980, La Plata
 Avenida Callao 745, Buenos Aires
-Calle Alem 1540, BahÌa Blanca
+Calle Alem 1540, Bah√≠a Blanca
 Calle 9 de Julio 1150, Posadas
 Avenida Independencia 2030, Mar del Plata
 Calle Catamarca 420, San Salvador de Jujuy
 Avenida Mitre 560, Avellaneda
-Calle Sarmiento 1890, Tucum·n
+Calle Sarmiento 1890, Tucum√°n
 Calle Alberdi 780, Corrientes
-Avenida San MartÌn 4550, Villa MarÌa
-Calle Chacabuco 1320, CÛrdoba
-Avenida HipÛlito Yrigoyen 2010, Lomas de Zamora
+Avenida San Mart√≠n 4550, Villa Mar√≠a
+Calle Chacabuco 1320, C√≥rdoba
+Avenida Hip√≥lito Yrigoyen 2010, Lomas de Zamora
 Calle Roca 970, Comodoro Rivadavia
 Avenida Libertador 6400, Buenos Aires
-Calle ItuzaingÛ 880, Paran†
-Calle BolÌvar 1560, Salta
-Calle EspaÒa 1900, Santiago del Estero
+Calle Ituzaing√≥ 880, Paran√°
+Calle Bol√≠var 1560, Salta
+Calle Espa√±a 1900, Santiago del Estero
 Calle Italia 710, Santa Fe
-Avenida PueyrredÛn 360, Buenos Aires
-Calle Entre RÌos 1120, San Juan
+Avenida Pueyrred√≥n 360, Buenos Aires
+Calle Entre R√≠os 1120, San Juan
 Calle Chile 540, Mendoza
 Avenida Luro 2980, Mar del Plata
-Calle Tucum·n 1760, Resistencia
-Avenida Guemes 880, Salta
+Calle Tucum√°n 1760, Resistencia
+Avenida G√ºemes 880, Salta
 Calle Paso 1450, Rosario
 Avenida Illia 920, San Luis
 Calle Moreno 1325, Formosa
 Avenida Alem 780, Puerto Madryn
-Calle CÛrdoba 2500, Rosario
-Avenida VÈlez Sarsfield 1990, CÛrdoba
-Calle French 370, San Nicol†s
+Calle C√≥rdoba 2500, Rosario
+Avenida V√©lez Sarsfield 1990, C√≥rdoba
+Calle French 370, San Nicol√°s
 Calle Reconquista 820, Buenos Aires
 Calle Rioja 1080, Santa Rosa
-Avenida Eva PerÛn 4600, Lan˙s
-Calle Dean Funes 750, CÛrdoba
+Avenida Eva Per√≥n 4600, Lan√∫s
+Calle Dean Funes 750, C√≥rdoba
 Calle Brandsen 1980, Quilmes
 Calle French 1320, San Rafael
 Avenida 25 de Mayo 680, Chaco
-Calle Moreno 210, RÌo Cuarto
+Calle Moreno 210, R√≠o Cuarto
 Avenida Belgrano 920, Catamarca
-Calle La Rioja 1085, Tucum·n
-Calle JunÌn 450, Corrientes
+Calle La Rioja 1085, Tucum√°n
+Calle Jun√≠n 450, Corrientes
 Avenida Roca 1550, Bariloche
 Calle Avellaneda 610, San Fernando
 Calle Mitre 1130, Azul
 Avenida Las Heras 890, Mendoza
-Calle CÛrdoba 540, NeuquÈn
+Calle C√≥rdoba 540, Neuqu√©n
 Calle Libertad 1270, Mar del Plata
 Calle 3 de Febrero 870, Rosario
-Calle French 1020, Paran†
+Calle French 1020, Paran√°
 Calle Lavalle 1960, San Isidro
 Avenida Gaona 3480, Buenos Aires
 Calle Moreno 420, Concordia
-Calle Maip˙ 1880, San Juan
-Calle Italia 1125, Gualeguaych˙
+Calle Maip√∫ 1880, San Juan
+Calle Italia 1125, Gualeguaych√∫
 Calle Caseros 1480, Salta
 Avenida Santa Fe 1480, Buenos Aires
 Calle San Juan 950, Villa Mercedes
-Avenida Brown 1120, BahÌa Blanca
-Calle Laprida 1340, San Miguel de Tucum·n
-Calle CÛrdoba 1620, San Luis
+Avenida Brown 1120, Bah√≠a Blanca
+Calle Laprida 1340, San Miguel de Tucum√°n
+Calle C√≥rdoba 1620, San Luis
 Calle Mitre 820, Trelew
 Calle Lavalle 1320, San Justo
 Calle Moreno 1180, Ushuaia
-Avenida ColÛn 1800, CÛrdoba
-Calle EspaÒa 540, Tandil
-Calle Alem 620, RÌo Gallegos
-Calle Entre RÌos 420, Pergamino
+Avenida Col√≥n 1800, C√≥rdoba
+Calle Espa√±a 540, Tandil
+Calle Alem 620, R√≠o Gallegos
+Calle Entre R√≠os 420, Pergamino
 Calle 25 de Mayo 210, Viedma
 Calle Sarmiento 980, San Fernando del Valle de Catamarca
-Calle O'Higgins 750, Mendoza
+Calle O‚ÄôHiggins 750, Mendoza
 Calle Jujuy 1040, Santa Fe
 Avenida Alem 2030, Rosario
-Calle Belgrano 1480, R°o Cuarto
+Calle Belgrano 1480, R√≠o Cuarto
 Calle Buenos Aires 620, San Pedro
-Calle Tucum·n 870, Mercedes
-Calle General Paz 1900, CÛrdoba
+Calle Tucum√°n 870, Mercedes
+Calle General Paz 1900, C√≥rdoba
 Calle Almafuerte 740, Corrientes
-Calle Laprida 320, BahÌa Blanca
+Calle Laprida 320, Bah√≠a Blanca
 Avenida Pellegrini 2300, Rosario
 Calle Brown 520, San Rafael
 Calle Castelli 1100, Quilmes
 Avenida Las Heras 2600, Buenos Aires
 Calle Lavalle 1850, Necochea
-Calle Moreno 1120, Villa MarÌa
-Calle Entre RÌos 1780, Paran†
+Calle Moreno 1120, Villa Mar√≠a
+Calle Entre R√≠os 1780, Paran√°
 Calle Ayacucho 530, Posadas
 Calle Dorrego 1250, San Isidro
 Avenida Callao 1350, Buenos Aires
