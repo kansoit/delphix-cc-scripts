@@ -1,0 +1,94 @@
+[
+  {
+    "domain": "0-CIUDAD",
+    "name": "0-CIUDAD-LST",
+    "description": "0-CIUDAD - LIST",
+    "type": "LIST",
+    "frameworkId": 2,
+    "properties": {
+      "valueLists": [
+        {
+          "file": "delphix-file://upload/f_164109468faf44ba9b5c5ebb73e6b6d2/CIUDAD.txt",
+          "matchStrength": 0.9
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-CIUDAD",
+    "name": "0-CIUDAD-PTH",
+    "description": "0-CIUDAD - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(ciu|ciudad))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(loc|localidad|municipio))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-CIUDAD",
+    "name": "0-CIUDAD-TYP",
+    "description": "0-CIUDAD - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "2",
+          "typeName": "String"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-CIUDAD",
+    "name": "0-CIUDAD-DAT",
+    "description": "0-CIUDAD - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(ciudad\\s+de\\s+[a-záéíóúñ]+)|(localidad\\s+de\\s+[a-záéíóúñ]+)|(municipio\\s+de\\s+[a-záéíóúñ]+)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-CIUDAD",
+    "name": "0-CIUDAD-REJ",
+    "description": "0-CIUDAD - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(ciudadania|localidad\\s+de\\s+referencia)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

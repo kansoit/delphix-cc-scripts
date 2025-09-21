@@ -1,0 +1,22 @@
+{
+  "algorithmName": "0-FirstName",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-NOMBRE",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 25,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "lookupFile": {
+      "uri": "NOMBRE.txt"
+    },
+    "filterAccent": true,
+    "maxNumberNames": 2,
+    "maskedValueCase": "PRESERVE_INPUT",
+    "inputCaseSensitive": false,
+    "maxLengthOfMaskedName": 0,
+    "particlesToRemoveFile": null,
+    "particlesToPreserveFile": null
+  }
+}

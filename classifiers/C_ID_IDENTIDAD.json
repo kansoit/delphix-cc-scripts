@@ -1,0 +1,102 @@
+[
+  {
+    "domain": "0-ID_IDENTIDAD",
+    "name": "0-ID_IDENTIDAD-PTH",
+    "description": "0-ID_IDENTIDAD - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(id[_\\-\\s]?(identidad|dni|cedula|ci|ine|lc|le))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(identidad|dni|cedula|ci|ine))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(doc(umento)?[_\\-\\s]?(identidad|id|dni|ci))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-ID_IDENTIDAD",
+    "name": "0-ID_IDENTIDAD-TYP",
+    "description": "0-ID_IDENTIDAD - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "6",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "6",
+          "typeName": "Number"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-ID_IDENTIDAD",
+    "name": "0-ID_IDENTIDAD-DAT",
+    "description": "0-ID_IDENTIDAD - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[0-9]{6,12}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.85,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "^[0-9]{6,10}[A-Z]$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.75,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)^(dni|ci|ced|cedula|lc|le|ine)[-_\\s]?[0-9]{5,12}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-ID_IDENTIDAD",
+    "name": "0-ID_IDENTIDAD-REJ",
+    "description": "0-ID_IDENTIDAD - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(id[_\\-\\s]?(usuario|cliente|beneficiario))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

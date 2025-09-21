@@ -1,0 +1,14 @@
+{
+  "algorithmName": "0-Iban",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-IBAN",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 8,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "validateInput": false,
+    "numCharsToMask": 36
+  }
+}

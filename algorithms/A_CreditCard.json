@@ -1,0 +1,14 @@
+{
+  "algorithmName": "0-CreditCard",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-TARJETA_CREDITO",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 10,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "preserve": 6,
+    "minMaskedPositions": 1
+  }
+}

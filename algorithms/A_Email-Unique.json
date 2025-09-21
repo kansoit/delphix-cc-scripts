@@ -1,0 +1,25 @@
+{
+  "algorithmName": "0-Email-Unique",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo Email (Unique) para dominio 0-EMAIL",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 22,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "nameAction": "UNIQUE",
+    "domainAction": "REPLACEMENT",
+    "filterAccents": false,
+    "nameAlgorithm": null,
+    "nameLookupFile": null,
+    "domainAlgorithm": null,
+    "lastNameAlgorithm": null,
+    "characterMappingRef": {
+      "name": "0-CM-Alpha-Numeric"
+    },
+    "errorHandlingAction": "EXCEPTION",
+    "domainReplacementString": "midominio.com"
+  }
+}
+

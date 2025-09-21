@@ -1,0 +1,5 @@
+{
+  "domainName": "0-FECHA_NACIMIENTO",
+  "defaultAlgorithmCode": "DateShiftDiscrete",
+  "defaultTokenizationCode": ""
+}

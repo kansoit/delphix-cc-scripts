@@ -1,0 +1,109 @@
+[
+  {
+    "domain": "0-ID_IMPUESTO",
+    "name": "0-ID_IMPUESTO-PTH",
+    "description": "0-ID_IMPUESTO - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(id[_\\-\\s]?(impuesto|tributo|tax))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(cuit|cuil|ruc|nit|rfc|cpf|cnpj)$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(impuesto|tributo|tax))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-ID_IMPUESTO",
+    "name": "0-ID_IMPUESTO-TYP",
+    "description": "0-ID_IMPUESTO - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "8",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "8",
+          "typeName": "Number"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-ID_IMPUESTO",
+    "name": "0-ID_IMPUESTO-DAT",
+    "description": "0-ID_IMPUESTO - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[0-9]{11}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.85,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "^[0-9]{8,14}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.75,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)^(CUIT|CUIL)[-_\\s]?[0-9]{8,11}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)^(RUC|NIT|RFC|CPF|CNPJ)[-_\\s]?[0-9]{8,14}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.85,
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-ID_IMPUESTO",
+    "name": "0-ID_IMPUESTO-REJ",
+    "description": "0-ID_IMPUESTO - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(codigo[_\\-\\s]?(postal|cliente|beneficiario))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

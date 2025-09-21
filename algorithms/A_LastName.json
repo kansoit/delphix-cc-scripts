@@ -1,0 +1,24 @@
+{
+  "algorithmName": "0-LastName",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-APELLIDO",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 25,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "lookupFile": {
+      "uri": "APELLIDO.txt"
+    },
+    "filterAccent": true,
+    "maxNumberNames": 1,
+    "maskedValueCase": "PRESERVE_INPUT",
+    "inputCaseSensitive": false,
+    "maxLengthOfMaskedName": 0,
+    "particlesToRemoveFile": {
+      "uri": "jar://file/ParticlesToRemoveFile.txt"
+    },
+    "particlesToPreserveFile": null
+  }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "domain": "0-APARTADO_POSTAL",
+    "name": "0-APARTADO_POSTAL-PTH",
+    "description": "0-APARTADO_POSTAL - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(ap(ar)?tado[_\\-\\s]?(postal)?)$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(casilla[_\\-\\s]?(postal)?)$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(po[_\\-\\s]?box)$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-APARTADO_POSTAL",
+    "name": "0-APARTADO_POSTAL-TYP",
+    "description": "0-APARTADO_POSTAL - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "3",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "3",
+          "typeName": "Number"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-APARTADO_POSTAL",
+    "name": "0-APARTADO_POSTAL-DAT",
+    "description": "0-APARTADO_POSTAL - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(ap(ar)?tado[_\\-\\s]?postal\\s*[0-9]{2,8})",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        },
+        {
+          "regex": "(?i)(casilla[_\\-\\s]?postal\\s*[0-9]{2,8})",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        },
+        {
+          "regex": "(?i)(p(ost)?\\.?\\s?o(ffice)?\\.?\\s?box\\s*[0-9]{2,8})",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-APARTADO_POSTAL",
+    "name": "0-APARTADO_POSTAL-REJ",
+    "description": "0-APARTADO_POSTAL - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(codigo[_\\-\\s]?postal)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

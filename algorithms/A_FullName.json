@@ -1,0 +1,25 @@
+{
+  "algorithmName": "0-FullName",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-NOMBRE_COMPLETO1",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 5,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "lastNameAtTheEnd": true,
+    "lastNameSeparators": [
+      ","
+    ],
+    "maxNumberFirstNames": 2,
+    "lastNameAlgorithmRef": {
+      "name": "0-LastName"
+    },
+    "firstNameAlgorithmRef": {
+      "name": "0-FirstName"
+    },
+    "maxLengthOfMaskedName": 0,
+    "ifSingleWordConsiderAsLastName": true
+  }
+}

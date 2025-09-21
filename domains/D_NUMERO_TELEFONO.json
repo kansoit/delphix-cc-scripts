@@ -1,0 +1,5 @@
+{
+  "domainName": "0-NUMERO_TELEFONO",
+  "defaultAlgorithmCode": "dlpx-core:Phone Unique",
+  "defaultTokenizationCode": ""
+}

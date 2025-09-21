@@ -1,0 +1,22 @@
+{
+  "algorithmName": "0-CM-Alpha-Numeric",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo Character Mapping (CM) p/varios dominios",
+  "maskType": "STRING",
+  "isTokenizationSupported": true,
+  "frameworkId": 21,
+  "pluginId": 7,
+  "algorithmExtension": {
+  "caseSensitive": false,
+    "preserveRanges": null,
+    "characterGroups": [
+      "[a-zA-Z]",
+      "[0-9]",
+      "àáâãäåæèéêëçìíîïñðšòóôõöőùúûüűýÿžÀÁÂÃÄÅÆÈÉÊËÇÌÍÎÏÑÐŠÒÓÔÕÖŐÙÚÛÜŰÝŸŽ",
+      "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+    ],
+    "minMaskedPositions": 1,
+    "preserveLeadingZeros": false
+  }
+}

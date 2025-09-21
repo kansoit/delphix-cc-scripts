@@ -1,0 +1,91 @@
+[
+  {
+    "domain": "0-FIRMA",
+    "name": "0-FIRMA-PTH",
+    "description": "0-FIRMA - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(firma|signature|digital[_\\-\\s]?signature|hash[_\\-\\s]?firma)$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-FIRMA",
+    "name": "0-FIRMA-TYP",
+    "description": "0-FIRMA - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "20",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "50",
+          "typeName": "Binary"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-FIRMA",
+    "name": "0-FIRMA-DAT",
+    "description": "0-FIRMA - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[A-Fa-f0-9]{40,}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.85,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "^[A-Za-z0-9+/=]{100,}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "-----BEGIN SIGNATURE-----.*-----END SIGNATURE-----",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.9,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-FIRMA",
+    "name": "0-FIRMA-REJ",
+    "description": "0-FIRMA - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(firma[_\\-\\s]?(social|empresa|comercial))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]
+

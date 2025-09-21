@@ -1,0 +1,106 @@
+[
+  {
+    "domain": "0-DIRECCION",
+    "name": "0-DIRECCION-PTH",
+    "description": "0-DIRECCION - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(dir(eccion)?[_\\-\\s]?(dir|direccion))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(dir(eccion)?[_\\-\\s]?(dom|domicilio|calle))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-DIRECCION",
+    "name": "0-DIRECCION-TYP",
+    "description": "0-DIRECCION - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "15",
+          "typeName": "String"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-DIRECCION",
+    "name": "0-DIRECCION-DAT",
+    "description": "0-DIRECCION - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(.*[\\s]+calle[\\s]*.*)|(.*[\\s]+av(da|\\.)?(enida)?[\\s]*.*)|(.*[\\s]+bulevar[\\s]*.*)|(.*[\\s]+pasaje[\\s]*.*)|(.*[\\s]+camino[\\s]*.*)|(.*[\\s]+ruta[\\s]*.*)|(.*[\\s]+carretera[\\s]*.*)|(.*[\\s]+autopista[\\s]*.*)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.7,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)(calle|av(da|\\.)?(enida)?|bulevar|pasaje|camino|ruta|carretera|autopista)[\\s]+[0-9]{1,5}",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)(piso|dpto|depto|departamento|apartamento)[\\s]*[0-9a-zA-Z]{1,4}",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-DIRECCION",
+    "name": "0-DIRECCION-REJ",
+    "description": "0-DIRECCION - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(direccion[_\\-\\s]?(ip|ipv4|ipv6))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        },
+        {
+          "regex": "(?i)(direccion[_\\-\\s]?(correo|email|e[_\\-\\s]?mail|mail))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        },
+        {
+          "regex": "(?i)(direccion[_\\-\\s]?(url|web|http|https|www))",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

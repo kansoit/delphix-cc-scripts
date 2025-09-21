@@ -1,0 +1,96 @@
+[
+  {
+    "domain": "0-CODIGO_SEGURIDAD",
+    "name": "0-CODIGO_SEGURIDAD-PTH",
+    "description": "0-CODIGO_SEGURIDAD - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(pin|codigo[_\\-\\s]?(seguridad|acceso|pin))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(pin|seguridad))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-CODIGO_SEGURIDAD",
+    "name": "0-CODIGO_SEGURIDAD-TYP",
+    "description": "0-CODIGO_SEGURIDAD - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "3",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "3",
+          "typeName": "Number"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-CODIGO_SEGURIDAD",
+    "name": "0-CODIGO_SEGURIDAD-DAT",
+    "description": "0-CODIGO_SEGURIDAD - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[0-9]{3,8}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "^(?i)(pin)[-_\\s]?[0-9]{3,8}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.85,
+          "allowPartialMatch": true
+        },
+        {
+          "regex": "^(?i)(codigo|clave)[-_\\s]?(seguridad|acceso)[-_\\s]?[0-9]{3,8}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-CODIGO_SEGURIDAD",
+    "name": "0-CODIGO_SEGURIDAD-REJ",
+    "description": "0-CODIGO_SEGURIDAD - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(password|contrasena|passphrase)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

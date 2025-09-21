@@ -1,0 +1,5 @@
+{
+  "domainName": "0-TARJETA_CVV",
+  "defaultAlgorithmCode": "dlpx-core:CM Numeric",
+  "defaultTokenizationCode": ""
+}
