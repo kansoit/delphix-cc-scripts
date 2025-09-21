@@ -1,3 +1,0 @@
-# algorithmName;algorithmType;description;maskedValueCase;inputCaseSensitive;filterAccent;maxLengthOfMaskedName;fileName;fileType
-0_AR_NOMBRE_NM;COMPONENT;Nombres_NM;PRESERVE_LOOKUP_FILE;true;false;0;Nombres.txt;text/plain
-0_AR_APELLIDO_NM;COMPONENT;Apellidos_NM;PRESERVE_LOOKUP_FILE;true;false;0;Apellidos.txt;text/plain

@@ -1,3 +1,0 @@
-#algorithmName;algorithmType;description;caseSensitive;start;length;direction;characterGroups;minMaskedPositions;preserveLeadingZeros
-0_AR_CUILT_CM;COMPONENT;CUILT_CM;false;0;2;FORWARD;[0-9];8;false
-0_AR_DNI_CM;COMPONENT;DNI_CM;false;0;2;FORWARD;[0-9];5;false
