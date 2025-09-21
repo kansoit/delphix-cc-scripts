@@ -1,0 +1,20 @@
+{
+  "algorithmName": "0-WebUrl-SL",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo de enmascaramiento para el dominio 0-WEB_URL",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 26,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "hashMethod": "LEGACY",
+    "lookupFile": {
+      "uri": "jar://file/LegacyLookupFiles/WebURLsLookup.txt"
+    },
+    "maskedValueCase": "PRESERVE_LOOKUP_FILE",
+    "inputCaseSensitive": true,
+    "trimWhitespaceFromInput": false,
+    "trimWhitespaceInLookupFile": false
+  }
+}

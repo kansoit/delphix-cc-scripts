@@ -1,0 +1,89 @@
+[
+  {
+    "domain": "0-NUMERO_CLIENTE",
+    "name": "0-NUMERO_CLIENTE-PTH",
+    "description": "0-NUMERO_CLIENTE - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(cli|cliente))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(id[_\\-\\s]?(cli|cliente))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-NUMERO_CLIENTE",
+    "name": "0-NUMERO_CLIENTE-TYP",
+    "description": "0-NUMERO_CLIENTE - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "5",
+          "typeName": "String"
+        },
+        {
+          "minimumLength": "5",
+          "typeName": "Number"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-NUMERO_CLIENTE",
+    "name": "0-NUMERO_CLIENTE-DAT",
+    "description": "0-NUMERO_CLIENTE - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[0-9]{5,12}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "(?i)^CL[-_\\s]?[0-9]{4,10}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.7,
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-NUMERO_CLIENTE",
+    "name": "0-NUMERO_CLIENTE-REJ",
+    "description": "0-NUMERO_CLIENTE - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(sin[_\\-\\s]?cliente|test|dummy|na|n/?a)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "domainName": "0-MONTO_PAGO",
+  "defaultAlgorithmCode": "dlpx-core:CM Numeric",
+  "defaultTokenizationCode": ""
+}

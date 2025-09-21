@@ -1,0 +1,85 @@
+[
+  {
+    "domain": "0-IBAN",
+    "name": "0-IBAN-PTH",
+    "description": "0-IBAN - PATH",
+    "type": "PATH",
+    "frameworkId": 3,
+    "properties": {
+      "paths": [
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(iban|num(ero)?[_\\-\\s]?(iban))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(?i)^(id[_\\-\\s]?(iban))$",
+          "allowPartialMatch": false
+        }
+      ],
+      "rejectStrength": 0.0
+    }
+  },
+  {
+    "domain": "0-IBAN",
+    "name": "0-IBAN-TYP",
+    "description": "0-IBAN - TYPE",
+    "frameworkId": 4,
+    "properties": {
+      "allowedTypes": [
+        {
+          "minimumLength": "15",
+          "typeName": "String"
+        }
+      ]
+    }
+  },
+  {
+    "domain": "0-IBAN",
+    "name": "0-IBAN-DAT",
+    "description": "0-IBAN - DATA",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
+        },
+        {
+          "regex": "^[A-Z]{2}[0-9]{2}[-\\s]?[A-Z0-9]{2,30}([-\\s]?[A-Z0-9]{2,30})?$",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 0.8,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 0.1
+    }
+  },
+  {
+    "domain": "0-IBAN",
+    "name": "0-IBAN-REJ",
+    "description": "0-IBAN - REJECT",
+    "type": "DATA",
+    "frameworkId": 1,
+    "properties": {
+      "dataPatterns": [
+        {
+          "regex": "(?i)(swift|bic|clabe|cbu|aba)",
+          "checksumType": "NONE",
+          "caseSensitive": false,
+          "matchStrength": 1.0,
+          "allowPartialMatch": true
+        }
+      ],
+      "rejectStrength": 1.0
+    }
+  }
+]

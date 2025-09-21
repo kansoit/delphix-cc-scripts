@@ -1,0 +1,5 @@
+{
+  "domainName": "0-NUMERO_CUENTA_BANCARIA",
+  "defaultAlgorithmCode": "dlpx-core:CM Numeric",
+  "defaultTokenizationCode": ""
+}

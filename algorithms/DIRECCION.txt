@@ -1,0 +1,101 @@
+Avenida Rivadavia 1234, Buenos Aires
+Calle San Martin 456, Córdoba
+Avenida Corrientes 789, Buenos Aires
+Boulevard Oroño 1520, Rosario
+Calle Belgrano 2345, Mendoza
+Avenida Colón 876, Córdoba
+Calle Mitre 321, Salta
+Avenida Pellegrini 1450, Rosario
+Calle Lavalle 2100, Buenos Aires
+Avenida Santa Fe 3500, Buenos Aires
+Calle Moreno 980, La Plata
+Avenida Callao 745, Buenos Aires
+Calle Alem 1540, Bahía Blanca
+Calle 9 de Julio 1150, Posadas
+Avenida Independencia 2030, Mar del Plata
+Calle Catamarca 420, San Salvador de Jujuy
+Avenida Mitre 560, Avellaneda
+Calle Sarmiento 1890, Tucumán
+Calle Alberdi 780, Corrientes
+Avenida San Martín 4550, Villa María
+Calle Chacabuco 1320, Córdoba
+Avenida Hipólito Yrigoyen 2010, Lomas de Zamora
+Calle Roca 970, Comodoro Rivadavia
+Avenida Libertador 6400, Buenos Aires
+Calle Ituzaingó 880, Paran 
+Calle Bolívar 1560, Salta
+Calle España 1900, Santiago del Estero
+Calle Italia 710, Santa Fe
+Avenida Pueyrredón 360, Buenos Aires
+Calle Entre Ríos 1120, San Juan
+Calle Chile 540, Mendoza
+Avenida Luro 2980, Mar del Plata
+Calle Tucumán 1760, Resistencia
+Avenida Guemes 880, Salta
+Calle Paso 1450, Rosario
+Avenida Illia 920, San Luis
+Calle Moreno 1325, Formosa
+Avenida Alem 780, Puerto Madryn
+Calle Córdoba 2500, Rosario
+Avenida Vélez Sarsfield 1990, Córdoba
+Calle French 370, San Nicol s
+Calle Reconquista 820, Buenos Aires
+Calle Rioja 1080, Santa Rosa
+Avenida Eva Perón 4600, Lanús
+Calle Dean Funes 750, Córdoba
+Calle Brandsen 1980, Quilmes
+Calle French 1320, San Rafael
+Avenida 25 de Mayo 680, Chaco
+Calle Moreno 210, Río Cuarto
+Avenida Belgrano 920, Catamarca
+Calle La Rioja 1085, Tucumán
+Calle Junín 450, Corrientes
+Avenida Roca 1550, Bariloche
+Calle Avellaneda 610, San Fernando
+Calle Mitre 1130, Azul
+Avenida Las Heras 890, Mendoza
+Calle Córdoba 540, Neuquén
+Calle Libertad 1270, Mar del Plata
+Calle 3 de Febrero 870, Rosario
+Calle French 1020, Paran 
+Calle Lavalle 1960, San Isidro
+Avenida Gaona 3480, Buenos Aires
+Calle Moreno 420, Concordia
+Calle Maipú 1880, San Juan
+Calle Italia 1125, Gualeguaychú
+Calle Caseros 1480, Salta
+Avenida Santa Fe 1480, Buenos Aires
+Calle San Juan 950, Villa Mercedes
+Avenida Brown 1120, Bahía Blanca
+Calle Laprida 1340, San Miguel de Tucumán
+Calle Córdoba 1620, San Luis
+Calle Mitre 820, Trelew
+Calle Lavalle 1320, San Justo
+Calle Moreno 1180, Ushuaia
+Avenida Colón 1800, Córdoba
+Calle España 540, Tandil
+Calle Alem 620, Río Gallegos
+Calle Entre Ríos 420, Pergamino
+Calle 25 de Mayo 210, Viedma
+Calle Sarmiento 980, San Fernando del Valle de Catamarca
+Calle O'Higgins 750, Mendoza
+Calle Jujuy 1040, Santa Fe
+Avenida Alem 2030, Rosario
+Calle Belgrano 1480, R¡o Cuarto
+Calle Buenos Aires 620, San Pedro
+Calle Tucumán 870, Mercedes
+Calle General Paz 1900, Córdoba
+Calle Almafuerte 740, Corrientes
+Calle Laprida 320, Bahía Blanca
+Avenida Pellegrini 2300, Rosario
+Calle Brown 520, San Rafael
+Calle Castelli 1100, Quilmes
+Avenida Las Heras 2600, Buenos Aires
+Calle Lavalle 1850, Necochea
+Calle Moreno 1120, Villa María
+Calle Entre Ríos 1780, Paran 
+Calle Ayacucho 530, Posadas
+Calle Dorrego 1250, San Isidro
+Avenida Callao 1350, Buenos Aires
+Calle Alberdi 620, Formosa
+Calle San Lorenzo 930, Concordia

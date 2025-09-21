@@ -1,0 +1,20 @@
+{
+  "algorithmName": "0-Nombre_Completo-SL",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el dominio 0-NOMBRE_COMPLETO-SL",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 26,
+  "pluginId": 7,
+  "algorithmExtension": {
+    "hashMethod": "LEGACY",
+    "lookupFile": {
+      "uri": "NOMBRE_COMPLETO.txt"
+    },
+    "maskedValueCase": "PRESERVE_LOOKUP_FILE",
+    "inputCaseSensitive": true,
+    "trimWhitespaceFromInput": false,
+    "trimWhitespaceInLookupFile": false
+  }
+}

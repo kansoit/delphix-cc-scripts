@@ -1,0 +1,20 @@
+{                                                                                                       
+  "algorithmName": "0-Nombre_Empresa-SL",
+  "algorithmType": "COMPONENT",
+  "canReturnNull": false,
+  "description": "Algoritmo para el Dominio 0-NOMBRE_EMPRESA",
+  "maskType": "STRING",
+  "isTokenizationSupported": false,
+  "frameworkId": 26,
+  "pluginId": 7,
+  "algorithmExtension": {
+  "hashMethod": "LEGACY",
+    "lookupFile": {
+    "uri": "NOMBRE_EMPRESA.txt"
+    },
+    "maskedValueCase": "PRESERVE_LOOKUP_FILE",
+    "inputCaseSensitive": true,
+    "trimWhitespaceFromInput": false,
+    "trimWhitespaceInLookupFile": false
+  }
+}
