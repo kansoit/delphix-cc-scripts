@@ -245,6 +245,7 @@ build_curl() {
     fi
 
     curl_command="$curl_command -H 'Expect:' -i -v $URL_BASE/$API"
+    echo "$curl_command" | sed -E 's/"username": *"[^"]+"/"username": "***"/; s/"password": *"[^"]+"/"password": "***"/'
     log "$curl_command\n"
 }
 
