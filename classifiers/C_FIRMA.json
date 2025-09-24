@@ -10,7 +10,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(firma|signature|digital[_\\-\\s]?signature|hash[_\\-\\s]?firma)$",
+          "fieldValue": "^(firma[_\\-\\s]?digital|firma[_\\-\\s]?electronica)$",
           "allowPartialMatch": false
         }
       ],
@@ -47,14 +47,14 @@
           "regex": "^[A-Fa-f0-9]{40,}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
           "regex": "^[A-Za-z0-9+/=]{100,}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
@@ -62,30 +62,10 @@
           "checksumType": "NONE",
           "caseSensitive": false,
           "matchStrength": 0.9,
-          "allowPartialMatch": true
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-FIRMA",
-    "name": "0-FIRMA-REJ",
-    "description": "0-FIRMA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(firma[_\\-\\s]?(social|empresa|comercial))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]
-

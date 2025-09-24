@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(iban|num(ero)?[_\\-\\s]?(iban))$",
+          "fieldValue": "^(iban|num(ero)?[_\\-\\s]?(iban))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(id[_\\-\\s]?(iban))$",
+          "fieldValue": "^(id[_\\-\\s]?(iban))$",
           "allowPartialMatch": false
         }
       ],
@@ -46,40 +46,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.9,
-          "allowPartialMatch": false
-        },
-        {
-          "regex": "^[A-Z]{2}[0-9]{2}[-\\s]?[A-Z0-9]{2,30}([-\\s]?[A-Z0-9]{2,30})?$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "note": "Fetched from: 'https://www.swift.com/standards/data-standards/iban-international-bank-account-number', List of countries in order for regex formats listed below: Andorra, United Arab Emirates (The), Albania, Austria, Azerbaijan, Bosnia and Herzegovina, Belgium, Bulgaria, Bahrain, Burundi, Brazil, Republic of Belarus, Switzerland, Costa Rica, Cyprus, Czechia, Germany, Djibouti, Denmark, Dominican Republic, Estonia, Egypt, Spain, Finland, Faroe Islands, France, United Kingdom, Georgia, Gibraltar, Greenland, Greece, Guatemala, Croatia, Hungary, Ireland, Israel, Iraq, Iceland, Italy, Jordan, Kuwait, Kazakhstan, Lebanon, Saint Lucia, Liechtenstein, Lithuania, Luxembourg, Latvia, Libya, Monaco, Moldova, Montenegro, Macedonia, Mauritania, Malta, Mauritius, Netherlands, Norway, Pakistan, Poland, Palestine, State of, Portugal, Qatar, Romania, Serbia, Russia, Saudi Arabia, Seychelles, Sudan, Sweden, Slovenia, Slovakia, San Marino, Somalia, Sao Tome and Principe, El Salvador, Timor-Leste, Tunisia, Turkey, Ukraine, Vatican City State, Virgin Islands, Kosovo",
+          "regex": "(AD[0-9]{10}[A-Z0-9]{12})|(AE[0-9]{21})|(AL[0-9]{10}[A-Z0-9]{16})|(AT[0-9]{18})|(AZ[0-9]{2}[A-Z]{4}[A-Z0-9]{20})|(BA[0-9]{18})|(BE[0-9]{14})|(BG[0-9]{2}[A-Z]{4}[0-9]{6}[A-Z0-9]{8})|(BH[0-9]{2}[A-Z]{4}[A-Z0-9]{14})|(BI[0-9]{25})|(BR[0-9]{25}[A-Z]{1}[A-Z0-9]{1})|(BY[0-9]{2}[A-Z0-9]{4}[0-9]{4}[A-Z0-9]{16})|(CH[0-9]{7}[A-Z0-9]{12})|(CR[0-9]{20})|(CY[0-9]{10}[A-Z0-9]{16})|(CZ[0-9]{22})|(DE[0-9]{20})|(DJ[0-9]{25})|(DK[0-9]{16})|(DO[0-9]{2}[A-Z0-9]{4}[0-9]{20})|(EE[0-9]{18})|(EG[0-9]{27})|(ES[0-9]{22})|(FI[0-9]{16})|(FO[0-9]{16})|(FR[0-9]{12}[A-Z0-9]{11}[0-9]{2})|(GB[0-9]{2}[A-Z]{4}[0-9]{14})|(GE[0-9]{2}[A-Z]{2}[0-9]{16})|(GI[0-9]{2}[A-Z]{4}[A-Z0-9]{15})|(GL[0-9]{16})|(GR[0-9]{9}[A-Z0-9]{16})|(GT[0-9]{2}[A-Z0-9]{24})|(HR[0-9]{19})|(HU[0-9]{26})|(IE[0-9]{2}[A-Z]{4}[0-9]{14})|(IL[0-9]{21})|(IQ[0-9]{2}[A-Z]{4}[0-9]{15})|(IS[0-9]{24})|(IT[0-9]{2}[A-Z]{1}[0-9]{10}[A-Z0-9]{12})|(JO[0-9]{2}[A-Z]{4}[0-9]{4}[A-Z0-9]{18})|(KW[0-9]{2}[A-Z]{4}[A-Z0-9]{22})|(KZ[0-9]{5}[A-Z0-9]{13})|(LB[0-9]{6}[A-Z0-9]{20})|(LC[0-9]{2}[A-Z]{4}[A-Z0-9]{24})|(LI[0-9]{7}[A-Z0-9]{12})|(LT[0-9]{18})|(LU[0-9]{5}[A-Z0-9]{13})|(LV[0-9]{2}[A-Z]{4}[A-Z0-9]{13})|(LY[0-9]{23})|(MC[0-9]{12}[A-Z0-9]{11}[0-9]{2})|(MD[0-9]{2}[A-Z0-9]{20})|(ME[0-9]{20})|(MK[0-9]{5}[A-Z0-9]{10}[0-9]{2})|(MR[0-9]{25})|(MT[0-9]{2}[A-Z]{4}[0-9]{5}[A-Z0-9]{18})|(MU[0-9]{2}[A-Z]{4}[0-9]{19}[A-Z]{3})|(NL[0-9]{2}[A-Z]{4}[0-9]{10})|(NO[0-9]{13})|(PK[0-9]{2}[A-Z]{4}[A-Z0-9]{16})|(PL[0-9]{26})|(PS[0-9]{2}[A-Z]{4}[A-Z0-9]{21})|(PT[0-9]{23})|(QA[0-9]{2}[A-Z]{4}[A-Z0-9]{21})|(RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16})|(RS[0-9]{20})|(RU[0-9]{31})|(SA[0-9]{4}[A-Z0-9]{18})|(SC[0-9]{2}[A-Z]{4}[0-9]{20}[A-Z]{3})|(SD[0-9]{16})|(SE[0-9]{22})|(SI[0-9]{17})|(SK[0-9]{22})|(SM[0-9]{2}[A-Z]{1}[0-9]{10}[A-Z0-9]{12})|(SO[0-9]{21})|(ST[0-9]{23})|(SV[0-9]{2}[A-Z]{4}[0-9]{20})|(TL[0-9]{21})|(TN[0-9]{22})|(TR[0-9]{8}[A-Z0-9]{16})|(UA[0-9]{8}[A-Z0-9]{19})|(VA[0-9]{20})|(VG[0-9]{2}[A-Z]{4}[0-9]{16})|(XK[0-9]{18})",
+          "allowPartialMatch": false,
+          "checksumType": "MOD97",
+          "matchStrength": 0.9
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-IBAN",
-    "name": "0-IBAN-REJ",
-    "description": "0-IBAN - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(swift|bic|clabe|cbu|aba)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

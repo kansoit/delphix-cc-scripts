@@ -10,19 +10,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(id[_\\-\\s]?(identidad|dni|cedula|ci|ine|lc|le))$",
+          "fieldValue": "^(id[_\\-\\s]?(identidad|dni|cedula|ci|ine|lc|le))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(identidad|dni|cedula|ci|ine))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(identidad|dni|cedula|ci|ine))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(doc(umento)?[_\\-\\s]?(identidad|id|dni|ci))$",
+          "fieldValue": "^(doc(umento)?[_\\-\\s]?(identidad|id|dni|ci))$",
           "allowPartialMatch": false
         }
       ],
@@ -59,44 +59,25 @@
           "regex": "^[0-9]{6,12}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
           "regex": "^[0-9]{6,10}[A-Z]$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.75,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "(?i)^(dni|ci|ced|cedula|lc|le|ine)[-_\\s]?[0-9]{5,12}$",
+          "regex": "^(dni|ci|ced|cedula|lc|le|ine)[-_\\s]?[0-9]{5,12}$",
           "checksumType": "NONE",
           "caseSensitive": false,
           "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-ID_IDENTIDAD",
-    "name": "0-ID_IDENTIDAD-REJ",
-    "description": "0-ID_IDENTIDAD - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(id[_\\-\\s]?(usuario|cliente|beneficiario))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

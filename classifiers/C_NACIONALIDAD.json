@@ -4,16 +4,15 @@
     "name": "0-NACIONALIDAD-LST",
     "description": "0-NACIONALIDAD - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_89b190165d0649079a417a0c2ef2947b/NACIONALIDAD.txt",
+          "file": "delphix-file://upload/f_d4c6a9108aaa42aa8af20c88abe1e988/NACIONALIDAD.txt",
           "matchStrength": 1.0
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-NACIONALIDAD",
@@ -26,13 +25,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(nac|nacionalidad))$",
+          "fieldValue": "^(nac(ionalidad)?)$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(pais[_\\-\\s]?(origen)?)$",
+          "fieldValue": "^(pais[_\\-\\s]?(origen)?)$",
           "allowPartialMatch": false
         }
       ],
@@ -47,7 +46,7 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "3",
+          "minimumLength": "4",
           "typeName": "String"
         }
       ]
@@ -62,33 +61,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(nacionalidad\\s+[a-záéíóúñ]+)|(ciudadan[íi]a\\s+[a-záéíóúñ]+)|(origen\\s+[a-záéíóúñ]+)",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NACIONALIDAD",
-    "name": "0-NACIONALIDAD-REJ",
-    "description": "0-NACIONALIDAD - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(estado\\s+nacional|seguro\\s+social|numero\\s+de\\s+nacionalidad)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(casa|vivienda|apto|apartamento|depto|dpto|unidad|lote))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(casa|vivienda|apto|apartamento|depto|dpto|unidad|lote))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(id[_\\-\\s]?(casa|vivienda|apto|depto|unidad|lote))$",
+          "fieldValue": "^(id[_\\-\\s]?(casa|vivienda|apto|depto|unidad|lote))$",
           "allowPartialMatch": false
         }
       ],
@@ -53,44 +53,25 @@
           "regex": "^[0-9]{1,5}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": false
+          "matchStrength": 0.9,
+          "allowPartialMatch": true
         },
         {
-          "regex": "^[0-9]{1,4}[A-Z]$",
+          "regex": "^[0-9]{1,5}[A-Z]$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.75,
-          "allowPartialMatch": false
+          "matchStrength": 0.9,
+          "allowPartialMatch": true
         },
         {
-          "regex": "(?i)^(casa|vivienda|apto|apartamento|depto|dpto|unidad|lote)[-_\\s]?[0-9]{1,5}[A-Z]?$",
+          "regex": "^(casa|vivienda|apto|apartamento|depto|dpto|unidad|lote)[-_\\s]?[0-9]{1,5}[A-Z]?$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
-          "allowPartialMatch": false
-        }
-      ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NUMERO_VIVIENDA",
-    "name": "0-NUMERO_VIVIENDA-REJ",
-    "description": "0-NUMERO_VIVIENDA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(direccion[_\\-\\s]?(ip|web|correo))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
+          "matchStrength": 0.9,
           "allowPartialMatch": true
         }
       ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

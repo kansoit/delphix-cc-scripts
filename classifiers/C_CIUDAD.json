@@ -4,16 +4,15 @@
     "name": "0-CIUDAD-LST",
     "description": "0-CIUDAD - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_164109468faf44ba9b5c5ebb73e6b6d2/CIUDAD.txt",
-          "matchStrength": 0.9
+          "file": "delphix-file://upload/f_9f8d8efe2bcd4916b9dadc2212482093/CIUDAD.txt",
+          "matchStrength": 0.2
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-CIUDAD",
@@ -26,13 +25,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(ciu|ciudad))$",
+          "fieldValue": "^(nom(bre)?[_\\-\\s]?(ciu|ciudad))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(loc|localidad|municipio))$",
+          "fieldValue": "^(nom(bre)?[_\\-\\s]?(loc|localidad|municipio))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "(ciudad|loc|localidad|muni|municipio)",
           "allowPartialMatch": false
         }
       ],
@@ -62,33 +67,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(ciudad\\s+de\\s+[a-záéíóúñ]+)|(localidad\\s+de\\s+[a-záéíóúñ]+)|(municipio\\s+de\\s+[a-záéíóúñ]+)",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-CIUDAD",
-    "name": "0-CIUDAD-REJ",
-    "description": "0-CIUDAD - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(ciudadania|localidad\\s+de\\s+referencia)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

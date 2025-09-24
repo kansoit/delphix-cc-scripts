@@ -5,26 +5,26 @@ set -euo pipefail
 apiVer="v5.1.27"
 MASKING_ENGINE=""
 URL_BASE=""
-CLASSIFIER_FILE="crt_classifiers.csv"
+CLASSIFIER_FILE="dlt_classifiers.csv"
 IGN_ERROR="false"
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
-logFileName="dpxcc_create_classifiers_$logFileDate.log"
+logFileName="dpxcc_delete_classifiers_$logFileDate.log"
 PROXY_BYPASS=true
 HttpsInsecure=false
 
 
 show_help() {
-    echo "Usage: dpxcc_create_classifiers.sh [options]"
+    echo "Usage: dpxcc_delete_classifiers.sh [options]"
     echo "Options:"
-    echo "  --classifiers-file  -c  File containing Classifiers            - Default: crt_classifiers.csv"
-    echo "  --ignore-errors     -i  Ignore errors while adding Classifiers - Default: false"
+    echo "  --classifiers-file  -c  File containing Classifiers to delete - Default: dlt_classifiers.csv"
+    echo "  --ignore-errors     -i  Ignore errors while deleting Classifiers - Default: false"
     echo "  --log-file          -o  Log file name                          - Default: Current date_time.log"
     echo "  --proxy-bypass      -x  Proxy ByPass                           - Default: true"
     echo "  --https-insecure    -k  Make Https Insecure                    - Default: false"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_create_classifiers.sh"
+    echo "dpxcc_delete_classifiers.sh"
     exit 1
 }
 
@@ -121,13 +121,6 @@ check_jsonf() {
     if [ ! -f "$jsonFile" ] && [ "$IGNORE" != "true" ]; then
         echo "Input json file $jsonFile is missing"
         exit 1
-          if jq empty "$f" >/dev/null 2>&1; then
-             log "OK: $f"
-          else
-             echo "ERROR: $f"
-             echo "json file format is NOT valid!"
-             exit 1
-          fi
     fi
 }
 
@@ -166,6 +159,20 @@ check_response_error() {
     local API="$2"
     local IGNORE="$3"
 
+    if [ -z "$CURL_BODY_RESPONSE" ]; then
+        if [ "$CURL_HEADER_RESPONSE" -eq 204 ]; then
+            log "Response Code: $CURL_HEADER_RESPONSE - No Content (expected for successful delete)\n"
+            return 0
+        else
+            log "Error: Empty response body with HTTP status code: $CURL_HEADER_RESPONSE\n"
+            if [[ "$IGNORE" == "false" ]]; then
+                dpxlogout
+                exit 1
+            fi
+            return 1
+        fi
+    fi
+
     local errorMessage
 
     # jq returns a literal null so we have to check against that...
@@ -196,7 +203,7 @@ check_response_error() {
         else
             errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
             log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
-            log "$errorMessage"
+            echo "$errorMessage"
             exit 1
         fi
     else
@@ -252,7 +259,7 @@ build_curl() {
     fi
 
     curl_command="$curl_command -H 'Expect:' -i -v $URL_BASE/$API"
-    echo "$curl_command" | sed -E 's/"username": *"[^"]+"/"username": "***"/; s/"password": *"[^"]+"/"password": "***"/'
+    echo "$curl_command" | sed -E 's/"username": *"[^"]+"/"username": "***"/; s/"password": *"[^"]+"/"password": "***"/' >&2
     log "$curl_command\n"
 }
 
@@ -320,32 +327,40 @@ dpxlogout() {
     fi
 }
 
-get_framework_map() {
+get_classifiers() {
     local FUNC="${FUNCNAME[0]}"
-    log "Fetching classifier frameworks from API...\n"
-
-    local URL_BASE_ARG="$MASKING_ENGINE/masking/api/$apiVer"
-    local API='classifiers/frameworks?include_schema=false'
+    local URL_BASE_ARG="${MASKING_ENGINE}/masking/api/${apiVer}"
+    local API="classifiers"
     local METHOD="GET"
-    local AUTH="$AUTH_HEADER"
+    local AUTH="${AUTH_HEADER}"
     local CONTENT_TYPE="application/json"
     local FORM_ARG=""
     local DATA_ARG=""
 
-    build_curl "$URL_BASE_ARG" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
+    log "Getting total number of classifiers...\n"
 
-    local GET_FRAMEWORKS_RESPONSE
-    #GET_FRAMEWORKS_RESPONSE=$(eval "$curl_command" 2>/dev/null < /dev/null)
-    GET_FRAMEWORKS_RESPONSE=$(eval "$curl_command" 2>/dev/null)
+    # First call to get the total number of classifiers
+    build_curl "$URL_BASE_ARG" "${API}?page_size=1" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
+    
+    local GET_CLASSIFIERS_RESPONSE
+    GET_CLASSIFIERS_RESPONSE=$(eval "$curl_command" 2>/dev/null)
 
-    split_response "$GET_FRAMEWORKS_RESPONSE"
-    check_response_error "$FUNC" "$API" "$IGN_ERROR"
+    split_response "$GET_CLASSIFIERS_RESPONSE"
+    check_response_error "$FUNC" "${API}?page_size=1" "$IGN_ERROR"
 
-    # Transform the response array into a JSON object map like {"LIST": 2, "PATH": 3}
-    FRAMEWORK_MAP=$(echo "$CURL_BODY_RESPONSE" | jq ' .responseList | map({key: .frameworkName, value: .frameworkId}) | from_entries ')
-    FRAMEWORK_MAP_COMPACT=$(echo "$FRAMEWORK_MAP" | jq -c .)
-    log "Framework map populated successfully.\n"
+    local TOTAL_CLASSIFIERS
+    TOTAL_CLASSIFIERS=$(echo "$CURL_BODY_RESPONSE" | jq '._pageInfo.total')
 
+    log "Total classifiers: $TOTAL_CLASSIFIERS. Getting all of them in a single page...\n"
+
+    # Second call to get all classifiers in one page
+    build_curl "$URL_BASE_ARG" "${API}?page_size=${TOTAL_CLASSIFIERS}" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
+    GET_CLASSIFIERS_RESPONSE=$(eval "$curl_command" 2>/dev/null)
+
+    split_response "$GET_CLASSIFIERS_RESPONSE"
+    check_response_error "$FUNC" "${API}?page_size=${TOTAL_CLASSIFIERS}" "$IGN_ERROR"
+
+    echo "$CURL_BODY_RESPONSE"
 }
 
 sync_classifier_file() {
@@ -374,7 +389,7 @@ sync_classifier_file() {
 
     local updated_content
     if [ "${#updated_json_objects_array[@]}" -gt 0 ]; then
-        updated_content=$(printf "%s\n" "${updated_json_objects_array[@]}" | jq -s '.')
+        updated_content=$(printf "%s\n" "${updated_json_objects_array[@]}" | jq -s .)
     else
         updated_content="[]"
     fi
@@ -387,52 +402,32 @@ sync_classifier_file() {
     fi
 }
 
-add_classifier() {
-    local classifierJsonPayload="$1"
-
-    if [ -z "$classifierJsonPayload" ]; then
-        log "Error: Could not read or parse classifier JSON content.\n"
-        return 1
-    fi
+delete_classifier() {
+    local className="$1"
+    local classId="$2"
 
     local FUNC="${FUNCNAME[0]}"
     local URL_BASE_ARG="$MASKING_ENGINE/masking/api/$apiVer"
-    local API='classifiers'
-    local METHOD="POST"
+    local API="classifiers/$classId"
+    local METHOD="DELETE"
     local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM_ARG=""
-    local DATA_ARG="$classifierJsonPayload"
+    local DATA_ARG=""
 
-    local classifierName
-    classifierName=$(echo "$DATA_ARG" | jq -r '.classifierName')
-    log "Adding Classifier $classifierName ...\n"
+    log "deleting Classifier $className ...\n"
 
     build_curl "$URL_BASE_ARG" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
 
-    local ADD_CLASSIFIER_RESPONSE
-    ADD_CLASSIFIER_RESPONSE=$(eval "$curl_command" 2>/dev/null)
+    local DLT_CLASSIFIER_RESPONSE
+    DLT_CLASSIFIER_RESPONSE=$(eval "$curl_command" 2>/dev/null)
 
-    split_response "$ADD_CLASSIFIER_RESPONSE"
-
-    local errorMessage
-    errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
-
-    if [[ "$IGN_ERROR" == "true" && "$errorMessage" == *"Classifier already exists"* ]]; then
-        log "Classifier: $classifierName already exists. Ignoring due to IGN_ERROR=true.\n"
-        return 0 # Return success to continue processing
-    fi
+    split_response "$DLT_CLASSIFIER_RESPONSE"
 
     check_response_error "$FUNC" "$API" "$IGN_ERROR"
 
-    ADD_CLASSIFIER_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.classifierName') # Assuming classifierName is returned on success
-    check_response_value "$ADD_CLASSIFIER_VALUE" "$IGN_ERROR"
-
-    if [ ! "$ADD_CLASSIFIER_VALUE" == "null" ]; then
-        log "Classifier: $classifierName submitted for creation.\n"
-    else
-        log "Classifier: $classifierName NOT submitted for creation.\n"
-    fi
+    # If check_response_error did not exit, it means the delete was successful or ignored
+    log "Classifier: $className deleted.\n"
 }
 
 check_packages
@@ -480,7 +475,7 @@ check_csvf "$CLASSIFIER_FILE" "$IGN_ERROR"
 
 dpxlogin
 
-get_framework_map
+ALL_CLASSIFIERS_JSON=$(get_classifiers)
 
 while read -r line
 do
@@ -488,36 +483,19 @@ do
     clean_line=$(echo "$line" | tr -d '"')
 
     # Usar IFS para dividir la línea limpia: jsonName;domainName;frameworkId
-    IFS=';' read -r jsonName <<< "$clean_line"
+    IFS=';' read -r className <<< "$clean_line"
 
-    if [[ ! "$jsonName" =~ "#" ]];
+    if [[ ! "$className" =~ "#" ]];
     then
-        # Construir la ruta completa al archivo JSON
-        json_file_path="$jsonName"
+        CLASSIFIER_ID=$(echo "$ALL_CLASSIFIERS_JSON" | jq -r --arg cn "$className" '.responseList[] | select(.classifierName == $cn) | .classifierId')
 
-        check_jsonf "$json_file_path" "$IGN_ERROR"
-
-        if [ -f "$json_file_path" ];
-        then
-            log "Processing file: $json_file_path\\n"
-
-            sync_classifier_file "$json_file_path"
-
-            # Leer el contenido del JSON del clasificador y procesar cada objeto
-            jq -c '.[]' "$json_file_path" | while read -r classifier_object; do
-                # Map fields from the source JSON to the target payload format
-                payload=$(echo "$classifier_object" | jq '{
-                    classifierName: .name,
-                    description: .description,
-                    frameworkId: .frameworkId,
-                    domainName: .domain,
-                    classifierConfiguration: .properties
-                }')
-
-                # Call add_classifier with the correctly formatted payload
-                add_classifier "$payload"
-            done
+        if [ -z "$CLASSIFIER_ID" ]; then
+            log "Warning: Classifier '$className' not found in the Masking Engine. Skipping.\n"
+            continue
         fi
+
+        # Call delete_classifier with className and classId
+        delete_classifier "$className" "$CLASSIFIER_ID"
     fi
 done < "$CLASSIFIER_FILE"
 

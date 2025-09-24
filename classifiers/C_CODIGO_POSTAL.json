@@ -1,6 +1,21 @@
 [
   {
     "domain": "0-CODIGO_POSTAL",
+    "name": "0-CODIGO_POSTAL-LST",
+    "description": "0-CODIGO_POSTAL - LIST",
+    "type": "LIST",
+    "properties": {
+      "valueLists": [
+        {
+          "file": "delphix-file://upload/f_ea09b0e779f24b3493a7e1a934ffd130/CODIGO_POSTAL.txt",
+          "matchStrength": 1.0
+        }
+      ]
+    },
+    "frameworkId": 2
+  },
+  {
+    "domain": "0-CODIGO_POSTAL",
     "name": "0-CODIGO_POSTAL-PTH",
     "description": "0-CODIGO_POSTAL - PATH",
     "type": "PATH",
@@ -10,13 +25,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(cod(igo)?[_\\-\\s]?(postal|zip))$",
+          "fieldValue": "^(cod(igo)?[_\\-\\s]?(postal))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(zip[_\\-\\s]?code|postal[_\\-\\s]?code)$",
+          "fieldValue": "(cp)",
           "allowPartialMatch": false
         }
       ],
@@ -50,40 +65,21 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "^[0-9]{4,8}$",
+          "regex": "^[0-9]{4,4}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "^[A-Z0-9]{4,10}$",
+          "regex": "^[A-Z0-9]{7,8}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-CODIGO_POSTAL",
-    "name": "0-CODIGO_POSTAL-REJ",
-    "description": "0-CODIGO_POSTAL - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(apartado[_\\-\\s]?postal|po[_\\-\\s]?box|casilla[_\\-\\s]?postal)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

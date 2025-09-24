@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(dir(eccion)?[_\\-\\s]?(ip|ipv4|ipv6))$",
+          "fieldValue": "^(dir(eccion)?[_\\-\\s]?(ip|ipv4|ipv6))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(ip[_\\-\\s]?(addr|address))$",
+          "fieldValue": "^(ip[_\\-\\s]?(addr|address))$",
           "allowPartialMatch": false
         }
       ],
@@ -46,40 +46,25 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.|$)){4}$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.9,
-          "allowPartialMatch": false
+          "regex": "(?>((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))",
+          "note": "IPv4",
+          "allowPartialMatch": false,
+          "matchStrength": 0.9
         },
         {
-          "regex": "^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9]))$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.9,
-          "allowPartialMatch": false
-        }
-      ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-DIRECCION_IP",
-    "name": "0-DIRECCION_IP-REJ",
-    "description": "0-DIRECCION_IP - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
+          "regex": "(?>([A-F0-9]{0,4}:){2,7}[A-F0-9]{0,4})",
+          "note": "IPv6 standard addresses",
+          "allowPartialMatch": false,
+          "matchStrength": 0.9
+        },
         {
-          "regex": "(?i)(direccion[_\\-\\s]?(web|url|correo|email))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
+          "regex": "(?>(([A-F0-9]{0,4}:){2,6})((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))",
+          "note": "IPv6 dual addresses",
+          "allowPartialMatch": false,
+          "matchStrength": 0.9
         }
       ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

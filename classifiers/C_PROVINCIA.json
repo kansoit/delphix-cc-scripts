@@ -4,16 +4,15 @@
     "name": "0-PROVINCIA-LST",
     "description": "0-PROVINCIA - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_af0b620fcd934abaae2f348d491e85d4/PROVINCIA.txt",
+          "file": "delphix-file://upload/f_b2924e8336054fe0b77d8c6f15bac090/PROVINCIA.txt",
           "matchStrength": 1.0
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-PROVINCIA",
@@ -26,13 +25,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(prov|provincia|pcia))$",
+          "fieldValue": "^(provincia|pcia|nom(bre)?[_\\-\\s]?(prov|provincia|pcia))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(est|estado|departamento))$",
+          "fieldValue": "^(estado|departamento|nom(bre)?[_\\-\\s]?(est|estado|departamento))$",
           "allowPartialMatch": false
         }
       ],
@@ -47,7 +46,7 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "3",
+          "minimumLength": "5",
           "typeName": "String"
         }
       ]
@@ -62,34 +61,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(provincia\\s+de\\s+[a-záéíóúñ]+)|(estado\\s+de\\s+[a-záéíóúñ]+)|(departamento\\s+de\\s+[a-záéíóúñ]+)",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-PROVINCIA",
-    "name": "0-PROVINCIA-REJ",
-    "description": "0-PROVINCIA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(estado\\s+civil|estado\\s+de\\s+cuenta)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]
-

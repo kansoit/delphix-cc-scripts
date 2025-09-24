@@ -1,7 +1,7 @@
 [
   {
-    "domain": "0-ID_TARJETA",
-    "name": "0-ID_TARJETA-PTH",
+    "domain": "0-TARJETA",
+    "name": "0-TARJETA-PTH",
     "description": "0-ID_TARJETA - PATH",
     "type": "PATH",
     "frameworkId": 3,
@@ -10,19 +10,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(id[_\\-\\s]?(tarjeta|card))$",
+          "fieldValue": "^(tarjeta[_\\-\\s]?num(ero)?)$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(tarjeta|card))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(tarjeta))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(tarjeta[_\\-\\s]?(credito|debito|loyalty|fidelizacion))$",
+          "fieldValue": "^(tarjeta[_\\-\\s]?(credito|debito|fidelizacion))$",
           "allowPartialMatch": false
         }
       ],
@@ -66,37 +66,18 @@
           "regex": "^[0-9]{13,19}$",
           "checksumType": "LUHN",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
           "regex": "^[0-9]{4}[-\\s]?[0-9]{4}[-\\s]?[0-9]{4,7}[-\\s]?[0-9]{0,7}$",
           "checksumType": "LUHN",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": true
         }
       ],
       "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-ID_TARJETA",
-    "name": "0-ID_TARJETA-REJ",
-    "description": "0-ID_TARJETA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(codigo[_\\-\\s]?(seguridad|cvv|cvc|cvn))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
     }
   }
 ]

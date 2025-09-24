@@ -1,19 +1,18 @@
 [
   {
     "domain": "0-NOMBRE_COMPLETO-SL",
-    "name": "0-NOMBRE_COMPLETO-SL-LST",
+    "name": "0-NOMBRE_COMPLETO-SL-LIST",
     "description": "0-NOMBRE_COMPLETO-SL - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_78f4c9598422470ea5a64d9a8a6cfae1/NOMBRE_COMPLETO.txt",
-          "matchStrength": 1.0
+          "file": "delphix-file://upload/f_2d09434997a34164833bf22db861bce5/NOMBRE_COMPLETO.txt",
+          "matchStrength": 0.2
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-NOMBRE_COMPLETO-SL",
@@ -26,13 +25,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(completo|full))$",
+          "fieldValue": "^(nom(bre)?[_\\-\\s]?(completo))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nombre[_\\-\\s]?y[_\\-\\s]?apellido(s)?)$",
+          "fieldValue": "^(nombre[_\\-\\s]?y[_\\-\\s]?apellido(s)?)$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "^(apellido[_\\-\\s]?y[_\\-\\s]?nombres(s)?)$",
           "allowPartialMatch": false
         }
       ],
@@ -62,33 +67,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+([\\s]+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3}$",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,}(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,20})*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NOMBRE_COMPLETO-SL",
-    "name": "0-NOMBRE_COMPLETO-SL-REJ",
-    "description": "0-NOMBRE_COMPLETO-SL - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(nombre[_\\-\\s]?(empresa|compañia|organizacion))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

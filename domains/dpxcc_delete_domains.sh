@@ -5,26 +5,26 @@ set -euo pipefail
 apiVer="v5.1.27"
 MASKING_ENGINE=""
 URL_BASE=""
-CLASSIFIER_FILE="crt_classifiers.csv"
-IGN_ERROR="false"
+DOMAIN_FILE='dlt_domains.csv'
+IGN_ERROR='false'
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
-logFileName="dpxcc_create_classifiers_$logFileDate.log"
+logFileName="dpxcc_delete_domains_$logFileDate.log"
 PROXY_BYPASS=true
 HttpsInsecure=false
 
 
 show_help() {
-    echo "Usage: dpxcc_create_classifiers.sh [options]"
+    echo "Usage: dpxcc_delete_domains.sh [options]"
     echo "Options:"
-    echo "  --classifiers-file  -c  File containing Classifiers            - Default: crt_classifiers.csv"
-    echo "  --ignore-errors     -i  Ignore errors while adding Classifiers - Default: false"
-    echo "  --log-file          -o  Log file name                          - Default: Current date_time.log"
-    echo "  --proxy-bypass      -x  Proxy ByPass                           - Default: true"
-    echo "  --https-insecure    -k  Make Https Insecure                    - Default: false"
+    echo "  --domains-file      -d  File with Domains               - Default: dlt_domains.csv"
+    echo "  --ignore-errors     -i  Ignore errors                   - Default: false"
+    echo "  --log-file          -o  Log file name                   - Default: Current date_time.log"
+    echo "  --proxy-bypass      -x  Proxy ByPass                    - Default: true"
+    echo "  --https-insecure    -k  Make Https Insecure             - Default: false"
     echo "  --help              -h  Show this help"
     echo "Example:"
-    echo "dpxcc_create_classifiers.sh"
+    echo "dpxcc_delete_domains.sh"
     exit 1
 }
 
@@ -38,6 +38,7 @@ log (){
 }
 
 check_packages() {
+    # Check Required Packages
     local JQ
     JQ=$(which jq)
     local CURL
@@ -85,7 +86,6 @@ check_conn() {
             exit 1
         fi
     }
-
     if [ "$curl_exit_code" -ne 0 ]; then
         # Check for specific error patterns in verbose output
         handle_conn_error "Connection timed out" "Por favor, verifica si la dirección IP del Masking Engine $MASKING_IP es correcta o si es necesario omitir el proxy con la opción -x true." "curl -s -v -m 5 -o /dev/null http://$MASKING_IP"
@@ -102,7 +102,6 @@ check_conn() {
     # If we reach here, connection is successful
     log "Connection to $URL successful.\n"
 }
-
 
 check_csvf() {
     local csvFile="$1"
@@ -121,13 +120,6 @@ check_jsonf() {
     if [ ! -f "$jsonFile" ] && [ "$IGNORE" != "true" ]; then
         echo "Input json file $jsonFile is missing"
         exit 1
-          if jq empty "$f" >/dev/null 2>&1; then
-             log "OK: $f"
-          else
-             echo "ERROR: $f"
-             echo "json file format is NOT valid!"
-             exit 1
-          fi
     fi
 }
 
@@ -145,7 +137,6 @@ split_response() {
     CURL_BODY_RESPONSE=$(printf %s "$CLEANED_RESPONSE" | sed -n '/^[[:space:]]*[{[]/,$p')
 }
 
-# Check if $1 not empty. If so print out message specified in $2 and exit.
 check_response_value() {
     local RESPONSE_VALUE="$1"
     local IGNORE="$2"
@@ -175,8 +166,8 @@ check_response_error() {
     JQ_ERROR_CHECK_EXIT_CODE=$?
 
     if [ "$JQ_ERROR_CHECK_EXIT_CODE" -ne 0 ]; then
-        log "Error: jq failed to parse errorMessage in check_response_error. Exit code: $JQ_ERROR_CHECK_EXIT_CODE\n"
-        log "CURL_BODY_RESPONSE was: $CURL_BODY_RESPONSE\n"
+        log "Error: jq failed to parse errorMessage in check_response_error. Exit code: $JQ_ERROR_CHECK_EXIT_CODE\\n"
+        log "CURL_BODY_RESPONSE was: $CURL_BODY_RESPONSE\\n"
         dpxlogout
         exit 1
     fi
@@ -196,7 +187,7 @@ check_response_error() {
         else
             errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
             log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
-            log "$errorMessage"
+            echo "$errorMessage"
             exit 1
         fi
     else
@@ -241,10 +232,7 @@ build_curl() {
     fi
 
     if [ -n "$DATA" ]; then
-        # Compact the JSON data before adding to curl command and logging
-        local COMPACT_DATA
-        COMPACT_DATA=$(echo "$DATA" | jq -c .)
-        curl_command="$curl_command --data '$COMPACT_DATA'"
+        curl_command="$curl_command --data '$DATA'"
     fi
 
     if [ "$HttpsInsecure" = true ]; then
@@ -320,130 +308,49 @@ dpxlogout() {
     fi
 }
 
-get_framework_map() {
-    local FUNC="${FUNCNAME[0]}"
-    log "Fetching classifier frameworks from API...\n"
+delete_domains() {
+    local domainName="$1"
 
+
+    local FUNC="${FUNCNAME[0]}"
     local URL_BASE_ARG="$MASKING_ENGINE/masking/api/$apiVer"
-    local API='classifiers/frameworks?include_schema=false'
-    local METHOD="GET"
+    local API="domains/$domainName"
+    local METHOD="DELETE"
     local AUTH="$AUTH_HEADER"
     local CONTENT_TYPE="application/json"
     local FORM_ARG=""
     local DATA_ARG=""
 
-    build_curl "$URL_BASE_ARG" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
-
-    local GET_FRAMEWORKS_RESPONSE
-    #GET_FRAMEWORKS_RESPONSE=$(eval "$curl_command" 2>/dev/null < /dev/null)
-    GET_FRAMEWORKS_RESPONSE=$(eval "$curl_command" 2>/dev/null)
-
-    split_response "$GET_FRAMEWORKS_RESPONSE"
-    check_response_error "$FUNC" "$API" "$IGN_ERROR"
-
-    # Transform the response array into a JSON object map like {"LIST": 2, "PATH": 3}
-    FRAMEWORK_MAP=$(echo "$CURL_BODY_RESPONSE" | jq ' .responseList | map({key: .frameworkName, value: .frameworkId}) | from_entries ')
-    FRAMEWORK_MAP_COMPACT=$(echo "$FRAMEWORK_MAP" | jq -c .)
-    log "Framework map populated successfully.\n"
-
-}
-
-sync_classifier_file() {
-    local classifier_file="$1"
-    log "Syncing framework IDs for $classifier_file...\n"
-
-    local original_content
-    original_content=$(cat "$classifier_file")
-
-    local raw_json_objects
-    raw_json_objects=$(jq -c '.[]' < "$classifier_file")
-
-    local updated_json_objects_array=()
-    while IFS= read -r current_object; do
-        local object_type
-        object_type=$(echo "$current_object" | jq -r '.type')
-
-        local new_framework_id
-        new_framework_id=$(echo "$FRAMEWORK_MAP_COMPACT" | jq -r "."$object_type" // null")
-
-        if [ "$new_framework_id" != "null" ]; then
-            current_object=$(echo "$current_object" | jq --argjson new_id "$new_framework_id" '.frameworkId = $new_id')
-        fi
-        updated_json_objects_array+=("$current_object")
-    done <<< "$raw_json_objects"
-
-    local updated_content
-    if [ "${#updated_json_objects_array[@]}" -gt 0 ]; then
-        updated_content=$(printf "%s\n" "${updated_json_objects_array[@]}" | jq -s '.')
-    else
-        updated_content="[]"
-    fi
-
-    if [ "$original_content" != "$updated_content" ]; then
-        log "Framework IDs are out of sync. Updating $classifier_file.\n"
-        echo "$updated_content" > "$classifier_file"
-    else
-        log "Framework IDs are already in sync.\n"
-    fi
-}
-
-add_classifier() {
-    local classifierJsonPayload="$1"
-
-    if [ -z "$classifierJsonPayload" ]; then
-        log "Error: Could not read or parse classifier JSON content.\n"
-        return 1
-    fi
-
-    local FUNC="${FUNCNAME[0]}"
-    local URL_BASE_ARG="$MASKING_ENGINE/masking/api/$apiVer"
-    local API='classifiers'
-    local METHOD="POST"
-    local AUTH="$AUTH_HEADER"
-    local CONTENT_TYPE="application/json"
-    local FORM_ARG=""
-    local DATA_ARG="$classifierJsonPayload"
-
-    local classifierName
-    classifierName=$(echo "$DATA_ARG" | jq -r '.classifierName')
-    log "Adding Classifier $classifierName ...\n"
+    log "Deleting Domain $domainName ...\n"
 
     build_curl "$URL_BASE_ARG" "$API" "$METHOD" "$AUTH" "$CONTENT_TYPE" "$KEEPALIVE" "$PROXY_BYPASS" "$HttpsInsecure" "$FORM_ARG" "$DATA_ARG"
 
-    local ADD_CLASSIFIER_RESPONSE
-    ADD_CLASSIFIER_RESPONSE=$(eval "$curl_command" 2>/dev/null)
+    local DLT_DOMAINS_RESPONSE
+    DLT_DOMAINS_RESPONSE=$(eval "$curl_command" 2>/dev/null)
 
-    split_response "$ADD_CLASSIFIER_RESPONSE"
-
-    local errorMessage
-    errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
-
-    if [[ "$IGN_ERROR" == "true" && "$errorMessage" == *"Classifier already exists"* ]]; then
-        log "Classifier: $classifierName already exists. Ignoring due to IGN_ERROR=true.\n"
-        return 0 # Return success to continue processing
-    fi
-
+    split_response "$DLT_DOMAINS_RESPONSE"
     check_response_error "$FUNC" "$API" "$IGN_ERROR"
 
-    ADD_CLASSIFIER_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.classifierName') # Assuming classifierName is returned on success
-    check_response_value "$ADD_CLASSIFIER_VALUE" "$IGN_ERROR"
+    local DLT_DOMAINS_VALUE
+    DLT_DOMAINS_VALUE=$(echo "$CURL_BODY_RESPONSE" | jq -r '.domainName')
+    check_response_value "$DLT_DOMAINS_VALUE" "$IGN_ERROR"
 
-    if [ ! "$ADD_CLASSIFIER_VALUE" == "null" ]; then
-        log "Classifier: $classifierName submitted for creation.\n"
+    if [ ! "$DLT_DOMAINS_VALUE" == "null" ]; then
+        log "Domain: $DLT_DOMAINS_VALUE deleted.\n"
     else
-        log "Classifier: $classifierName NOT submitted for creation.\n"
+        log "Domain NOT deleted.\n"
     fi
 }
 
 check_packages
 
-while getopts ":hc:i:o:x:k:" PARAMETERS; do
+while getopts ":hd:i:o:x:k:" PARAMETERS; do
     case $PARAMETERS in
         h)
             show_help
             ;;
-        c)
-            CLASSIFIER_FILE=${OPTARG[*]};
+        d)
+            DOMAIN_FILE=${OPTARG[*]};
             ;;
         i)
             IGN_ERROR=${OPTARG[*]};
@@ -476,49 +383,22 @@ MASKING_ENGINE=$(sed -n '3p' CONFIG)
 # Check connection
 check_conn "$MASKING_ENGINE" "$PROXY_BYPASS" "$HttpsInsecure"
 
-check_csvf "$CLASSIFIER_FILE" "$IGN_ERROR"
+check_csvf "$DOMAIN_FILE" "$IGN_ERROR"
 
 dpxlogin
-
-get_framework_map
 
 while read -r line
 do
     # Eliminar comillas de la línea completa
     clean_line=$(echo "$line" | tr -d '"')
 
-    # Usar IFS para dividir la línea limpia: jsonName;domainName;frameworkId
-    IFS=';' read -r jsonName <<< "$clean_line"
+    # Usar IFS para dividir la línea limpia
+    IFS=';' read -r domainName <<< "$clean_line"
 
-    if [[ ! "$jsonName" =~ "#" ]];
+    if [[ ! "$domainName" =~ "#" ]];
     then
-        # Construir la ruta completa al archivo JSON
-        json_file_path="$jsonName"
-
-        check_jsonf "$json_file_path" "$IGN_ERROR"
-
-        if [ -f "$json_file_path" ];
-        then
-            log "Processing file: $json_file_path\\n"
-
-            sync_classifier_file "$json_file_path"
-
-            # Leer el contenido del JSON del clasificador y procesar cada objeto
-            jq -c '.[]' "$json_file_path" | while read -r classifier_object; do
-                # Map fields from the source JSON to the target payload format
-                payload=$(echo "$classifier_object" | jq '{
-                    classifierName: .name,
-                    description: .description,
-                    frameworkId: .frameworkId,
-                    domainName: .domain,
-                    classifierConfiguration: .properties
-                }')
-
-                # Call add_classifier with the correctly formatted payload
-                add_classifier "$payload"
-            done
-        fi
+        delete_domains "$domainName"
     fi
-done < "$CLASSIFIER_FILE"
+done < "$DOMAIN_FILE"
 
 dpxlogout

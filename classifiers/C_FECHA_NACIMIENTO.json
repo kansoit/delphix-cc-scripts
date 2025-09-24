@@ -10,13 +10,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(fec(ha)?[_\\-\\s]?(nac(imiento)?|birth|dob))$",
-          "allowPartialMatch": false
-        },
-        {
-          "matchType": "REGEX",
-          "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nac(imiento)?[_\\-\\s]?(date|fecha))$",
+          "fieldValue": "^(fec(ha)?[_\\-\\s]?(nac(imiento)?))$",
           "allowPartialMatch": false
         }
       ],
@@ -59,37 +53,18 @@
           "regex": "^((19|20)[0-9]{2})[\\-/\\.]?(0[1-9]|1[0-2])[\\-/\\.]?(0[1-9]|[12][0-9]|3[01])$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "(?i)^(0?[1-9]|[12][0-9]|3[01])[-\\s]?(ene|feb|mar|abr|may|jun|jul|ago|sep|set|oct|nov|dic|january|february|march|april|may|june|july|august|september|october|november|december)[-\\s,]+(19[0-9]{2}|20[0-2][0-9])$",
+          "regex": "^(0?[1-9]|[12][0-9]|3[01])[-\\s]?(ene|feb|mar|abr|may|jun|jul|ago|sep|set|oct|nov|dic|january|february|march|april|may|june|july|august|september|october|november|december)[-\\s,]+(19[0-9]{2}|20[0-2][0-9])$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-FECHA_NACIMIENTO",
-    "name": "0-FECHA_NACIMIENTO-REJ",
-    "description": "0-FECHA_NACIMIENTO - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(fec(ha)?[_\\-\\s]?(alta|baja|creacion|modificacion))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

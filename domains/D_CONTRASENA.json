@@ -1,5 +1,5 @@
 {
   "domainName": "0-CONTRASENA",
-  "defaultAlgorithmCode": "0-CM-Alpha-Numeric",
+  "defaultAlgorithmCode": "NullValueLookup",
   "defaultTokenizationCode": ""
 }

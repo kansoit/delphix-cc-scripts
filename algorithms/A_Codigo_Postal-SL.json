@@ -1,8 +1,8 @@
 {
-  "algorithmName": "0-Comentario-SL",
+  "algorithmName": "0-Codigo_Postal-SL",
   "algorithmType": "COMPONENT",
   "canReturnNull": false,
-  "description": "Algoritmo para el dominio 0-COMENTARIO",
+  "description": "Algoritmo para el dominio 0-CODIGO_POSTAL",
   "maskType": "STRING",
   "isTokenizationSupported": false,
   "frameworkId": 26,
@@ -10,7 +10,7 @@
   "algorithmExtension": {
     "hashMethod": "LEGACY",
     "lookupFile": {
-      "uri": "COMENTARIO.txt"
+      "uri": "CODIGO_POSTAL.txt"
     },
     "maskedValueCase": "PRESERVE_LOOKUP_FILE",
     "inputCaseSensitive": true,

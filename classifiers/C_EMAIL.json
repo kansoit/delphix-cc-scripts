@@ -10,13 +10,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(email|e[_\\-\\s]?mail|correo[_\\-\\s]?(electr(o|ó)nico)?)$",
-          "allowPartialMatch": false
-        },
-        {
-          "matchType": "REGEX",
-          "matchStrength": 0.67,
-          "fieldValue": "(?i)^(user[_\\-\\s]?email|mail[_\\-\\s]?address)$",
+          "fieldValue": "^(email|e[_\\-\\s]?mail|correo[_\\-\\s]?(electr(o|ó)nico)?|user[_\\-\\s]?email|mail[_\\-\\s]?address)$",
           "allowPartialMatch": false
         }
       ],
@@ -31,7 +25,7 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "5",
+          "minimumLength": "8",
           "typeName": "String"
         }
       ]
@@ -46,40 +40,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.95,
-          "allowPartialMatch": false
-        },
-        {
-          "regex": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\.[A-Za-z]{2,}$",
+          "regex": "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}(\\.[A-Z]{2,})?$",
           "checksumType": "NONE",
           "caseSensitive": false,
           "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-EMAIL",
-    "name": "0-EMAIL-REJ",
-    "description": "0-EMAIL - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(pagina[_\\-\\s]?web|url|direccion[_\\-\\s]?(web|ip))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

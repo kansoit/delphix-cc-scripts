@@ -2,18 +2,17 @@
   {
     "domain": "0-NOMBRE_EMPRESA",
     "name": "0-NOMBRE_EMPRESA-LST",
-    "description": "0-NOMBRE_EMPRESA - LIST",
+    "description": "0-MOMBRE_EMPRESA - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_b678a279933543bc81fd63fb68cc1f01/NOMBRE_EMPRESA.txt",
-          "matchStrength": 1.0
+          "file": "delphix-file://upload/f_ec7c226eba62422a91dab773b58f78e7/NOMBRE_EMPRESA.txt",
+          "matchStrength": 0.2
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-NOMBRE_EMPRESA",
@@ -26,13 +25,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(empresa|compañia|compania|sociedad))$",
+          "fieldValue": "^(nom(bre)?[_\\-\\s]?(empresa|compañia|compania|sociedad))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(razon[_\\-\\s]?(social))$",
+          "fieldValue": "^(razon[_\\-\\s]?(social))$",
+          "allowPartialMatch": false
+        },
+        {
+          "matchType": "REGEX",
+          "matchStrength": 0.67,
+          "fieldValue": "^(empresa|compañia|compania|sociedad)$",
           "allowPartialMatch": false
         }
       ],
@@ -62,33 +67,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(empresa\\s+[a-záéíóúñ]+)|(compañ[ií]a\\s+[a-záéíóúñ]+)|(sociedad\\s+(anonima|limitada|colectiva))|(raz[oó]n\\s+social\\s+[a-záéíóúñ]+)",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NOMBRE_EMPRESA",
-    "name": "0-NOMBRE_EMPRESA-REJ",
-    "description": "0-NOMBRE_EMPRESA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(empresa\\s+familiar|empresa\\s+publica|empresa\\s+privada)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

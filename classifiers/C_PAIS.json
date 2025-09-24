@@ -4,16 +4,15 @@
     "name": "0-PAIS-LST",
     "description": "0-PAIS - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_54de5df46c9142468a2f8662d4652243/PAIS.txt",
+          "file": "delphix-file://upload/f_57a4089d7050454391c9c60c8fd437e6/PAIS.txt",
           "matchStrength": 1.0
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-PAIS",
@@ -26,19 +25,19 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(nom(bre)?[_\\-\\s]?(pais))$",
+          "fieldValue": "^(pais)$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(cod(igo)?[_\\-\\s]?(pais|iso))$",
+          "fieldValue": "^(nom(bre)?[_\\-\\s]?pais)$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(pais[_\\-\\s]?(origen|residencia))$",
+          "fieldValue": "^(pais[_\\-\\s]?(origen|residencia))$",
           "allowPartialMatch": false
         }
       ],
@@ -53,7 +52,7 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "3",
+          "minimumLength": "4",
           "typeName": "String"
         }
       ]
@@ -68,33 +67,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(republica\\s+de\\s+[a-záéíóúñ]+)|(estado\\s+plurinacional\\s+de\\s+[a-záéíóúñ]+)|(pais\\s+de\\s+[a-záéíóúñ]+)",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-PAIS",
-    "name": "0-PAIS-REJ",
-    "description": "0-PAIS - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(paisaje|paisajismo|pais\\s+fiscal)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]
