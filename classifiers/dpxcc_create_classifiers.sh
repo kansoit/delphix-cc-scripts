@@ -5,7 +5,7 @@ set -euo pipefail
 apiVer="v5.1.27"
 MASKING_ENGINE=""
 URL_BASE=""
-CLASSIFIER_FILE="classifiers.csv"
+CLASSIFIER_FILE="crt_classifiers.csv"
 IGN_ERROR="false"
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
@@ -17,11 +17,11 @@ HttpsInsecure=false
 show_help() {
     echo "Usage: dpxcc_create_classifiers.sh [options]"
     echo "Options:"
-    echo "  --classifiers-file  -c  File containing Classifiers         - Default: classifiers.csv"
+    echo "  --classifiers-file  -c  File containing Classifiers            - Default: crt_classifiers.csv"
     echo "  --ignore-errors     -i  Ignore errors while adding Classifiers - Default: false"
-    echo "  --log-file          -o  Log file name                         - Default: Current date_time.log"
-    echo "  --proxy-bypass      -x  Proxy ByPass                          - Default: true"
-    echo "  --https-insecure    -k  Make Https Insecure                   - Default: false"
+    echo "  --log-file          -o  Log file name                          - Default: Current date_time.log"
+    echo "  --proxy-bypass      -x  Proxy ByPass                           - Default: true"
+    echo "  --https-insecure    -k  Make Https Insecure                    - Default: false"
     echo "  --help              -h  Show this help"
     echo "Example:"
     echo "dpxcc_create_classifiers.sh"
@@ -121,6 +121,13 @@ check_jsonf() {
     if [ ! -f "$jsonFile" ] && [ "$IGNORE" != "true" ]; then
         echo "Input json file $jsonFile is missing"
         exit 1
+          if jq empty "$f" >/dev/null 2>&1; then
+             log "OK: $f"
+          else
+             echo "ERROR: $f"
+             echo "json file format is NOT valid!"
+             exit 1
+          fi
     fi
 }
 
@@ -189,7 +196,7 @@ check_response_error() {
         else
             errorMessage=$(echo "$CURL_BODY_RESPONSE" | jq -r '.errorMessage')
             log "${FUNCNAME[0]}() -> Function: $FUNC() - Api: $API - Response Code: $CURL_HEADER_RESPONSE - Response Body: $CURL_BODY_RESPONSE\n"
-            echo "$errorMessage"
+            log "$errorMessage"
             exit 1
         fi
     else

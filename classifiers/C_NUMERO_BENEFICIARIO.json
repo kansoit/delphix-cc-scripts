@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(benef|beneficiario))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(benef|beneficiario))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(id[_\\-\\s]?(benef|beneficiario))$",
+          "fieldValue": "^(id[_\\-\\s]?(benef|beneficiario))$",
           "allowPartialMatch": false
         }
       ],
@@ -31,11 +31,11 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "6",
+          "minimumLength": "8",
           "typeName": "String"
         },
         {
-          "minimumLength": "6",
+          "minimumLength": "8",
           "typeName": "Number"
         }
       ]
@@ -50,40 +50,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "^[0-9]{6,12}$",
+          "regex": "^[0-9][0-9/\\-]{8,16}[0-9]$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": false
-        },
-        {
-          "regex": "(?i)^BEN[-_\\s]?[0-9]{4,10}$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.7,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NUMERO_BENEFICIARIO",
-    "name": "0-NUMERO_BENEFICIARIO-REJ",
-    "description": "0-NUMERO_BENEFICIARIO - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(test|dummy|na|n/?a|sin[_\\-\\s]?beneficiario)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

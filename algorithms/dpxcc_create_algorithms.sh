@@ -5,7 +5,7 @@ set -euo pipefail
 apiVer="v5.1.27"
 MASKING_ENGINE=""
 URL_BASE=""
-ALGO_FILE="algorithms.csv"
+ALGO_FILE="crt_algorithms.csv"
 IGN_ERROR="false"
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
@@ -18,7 +18,7 @@ HttpsInsecure=false
 show_help() {
     echo "Usage: dpxcc_create_algorithms.sh [options]"
     echo "Options:"
-    echo "  --algorithms-file   -a  File containing Algorithms            - Default: algorithms.csv"
+    echo "  --algorithms-file   -a  File containing Algorithms            - Default: crt_algorithms.csv"
     echo "  --file-reference-id -f  File Reference Id name                - Default: fileid.csv"
     echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default: false"
     echo "  --log-file          -o  Log file name                         - Default: Current date_time.log"

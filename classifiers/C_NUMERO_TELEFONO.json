@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(tel(e(fono)?)?|phone))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(tel(e(fono)?)?|contacto|fijo|celular|movil))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(tel(e(fono)?)?|cel(ular)?|movil|mobile|contacto)$",
+          "fieldValue": "^(tel(e(fono)?)?|cel(ular)?|movil|contacto)$",
           "allowPartialMatch": false
         }
       ],
@@ -60,37 +60,18 @@
           "regex": "^\\+?[0-9]{1,4}[-\\s]?[0-9]{6,12}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         },
         {
           "regex": "^\\(?[0-9]{2,4}\\)?[-\\s]?[0-9]{3,4}[-\\s]?[0-9]{3,4}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": true
+          "matchStrength": 0.9,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NUMERO_TELEFONO",
-    "name": "0-NUMERO_TELEFONO-REJ",
-    "description": "0-NUMERO_TELEFONO - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(fax|extension|interno)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

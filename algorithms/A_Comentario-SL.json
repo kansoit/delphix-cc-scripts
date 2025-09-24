@@ -10,7 +10,7 @@
   "algorithmExtension": {
     "hashMethod": "LEGACY",
     "lookupFile": {
-      "uri": "jar://file/LegacyLookupFiles/CommentLookup.txt"
+      "uri": "COMENTARIO.txt"
     },
     "maskedValueCase": "PRESERVE_LOOKUP_FILE",
     "inputCaseSensitive": true,

@@ -10,13 +10,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(biometrico|biometric|huella|fingerprint|iris|retina|face|facial|voz|voice|dna|genetic)$",
-          "allowPartialMatch": false
-        },
-        {
-          "matchType": "REGEX",
-          "matchStrength": 0.67,
-          "fieldValue": "(?i)^(template[_\\-\\s]?(biometrico|biometric|huella|finger|face|iris))$",
+          "fieldValue": "^(biometrico|biometric|huella|fingerprint|iris|retina|face|facial|voz|voice|dna|genetic)$",
           "allowPartialMatch": false
         }
       ],
@@ -53,7 +47,7 @@
           "regex": "^[A-Fa-f0-9]{64,}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.85,
+          "matchStrength": 0.8,
           "allowPartialMatch": false
         },
         {
@@ -67,30 +61,11 @@
           "regex": "-----BEGIN BIOMETRIC DATA-----.*-----END BIOMETRIC DATA-----",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.9,
-          "allowPartialMatch": true
+          "matchStrength": 0.8,
+          "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-BIOMETRICO",
-    "name": "0-BIOMETRICO-REJ",
-    "description": "0-BIOMETRICO - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(dato[_\\-\\s]?demografico|foto[_\\-\\s]?perfil|imagen[_\\-\\s]?usuario)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

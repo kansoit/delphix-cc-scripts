@@ -1,6 +1,21 @@
 [
   {
     "domain": "0-COMENTARIO",
+    "name": "0-COMENTARIO-LST",
+    "description": "0-COMENTARIO - LIST",
+    "type": "LIST",
+    "properties": {
+      "valueLists": [
+        {
+          "file": "delphix-file://upload/f_b095a7c4657e4b3ba9301bbd475a2568/COMENTARIO.txt",
+          "matchStrength": 0.2
+        }
+      ]
+    },
+    "frameworkId": 2
+  },
+  {
+    "domain": "0-COMENTARIO",
     "name": "0-COMENTARIO-PTH",
     "description": "0-COMENTARIO - PATH",
     "type": "PATH",
@@ -10,7 +25,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(comentario|observacion|nota|notas|remarks?|observations?|comments?)$",
+          "fieldValue": "^(comentario|observacion|nota|notas)$",
           "allowPartialMatch": false
         }
       ],
@@ -25,30 +40,10 @@
     "properties": {
       "allowedTypes": [
         {
-          "minimumLength": "5",
+          "minimumLength": "25",
           "typeName": "String"
         }
       ]
     }
-  },
-  {
-    "domain": "0-COMENTARIO",
-    "name": "0-COMENTARIO-DAT",
-    "description": "0-COMENTARIO - DATA",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": ".*",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.5,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 0.0
-    }
   }
 ]
-

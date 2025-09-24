@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(contrasena|contraseña|clave|password|pwd)$",
+          "fieldValue": "^(contrasena|contraseña|clave|password|pwd)$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(user[_\\-\\s]?(pass|pwd))$",
+          "fieldValue": "^(user[_\\-\\s]?(pass|pwd))$",
           "allowPartialMatch": false
         }
       ],
@@ -46,61 +46,35 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*()_+=\\-]{6,}$",
+          "regex": "^\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.7,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "^[a-f0-9]{32}$",
+          "regex": "^[A-Fa-f0-9]{40}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "^[a-f0-9]{40}$",
+          "regex": "^[A-Fa-f0-9]{64}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "^[a-f0-9]{64}$",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 0.8,
-          "allowPartialMatch": false
-        },
-        {
-          "regex": "^(?=.*\\$2[aby]\\$)[0-9A-Za-z./$]{30,60}$",
+          "regex": "^[A-Fa-f0-9]{32}$",
           "checksumType": "NONE",
           "caseSensitive": false,
           "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-CONTRASENA",
-    "name": "0-CONTRASENA-REJ",
-    "description": "0-CONTRASENA - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(clave[_\\-\\s]?fiscal|password[_\\-\\s]?hint)",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

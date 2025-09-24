@@ -1,5 +1,5 @@
 {
   "domainName": "0-CODIGO_POSTAL",
-  "defaultAlgorithmCode": "SecureShuffle",
+  "defaultAlgorithmCode": "0-Codigo_Postal-SL",
   "defaultTokenizationCode": ""
 }

@@ -10,13 +10,13 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(num(ero)?[_\\-\\s]?(dir|direccion))$",
+          "fieldValue": "^(num(ero)?[_\\-\\s]?(dir|direccion))$",
           "allowPartialMatch": false
         },
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(altura|nro[_\\-\\s]?(casa|calle)?)$",
+          "fieldValue": "^(altura|nro[_\\-\\s]?(casa|calle)?)$",
           "allowPartialMatch": false
         }
       ],
@@ -53,37 +53,18 @@
           "regex": "^[0-9]{1,6}$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.8,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         },
         {
-          "regex": "^[0-9]{1,5}[A-Z]$",
+          "regex": "^[0-9]{1,6}[A-Z]$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.7,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-NUMERO_DIRECCION",
-    "name": "0-NUMERO_DIRECCION-REJ",
-    "description": "0-NUMERO_DIRECCION - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(direccion[_\\-\\s]?(ip|correo|web))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]

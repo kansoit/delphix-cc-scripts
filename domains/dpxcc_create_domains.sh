@@ -5,7 +5,7 @@ set -euo pipefail
 apiVer="v5.1.27"
 MASKING_ENGINE=""
 URL_BASE=""
-DOMAIN_FILE='domains.csv'
+DOMAIN_FILE='crt_domains.csv'
 IGN_ERROR='false'
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
@@ -17,7 +17,7 @@ HttpsInsecure=false
 show_help() {
     echo "Usage: dpxcc_create_domains.sh [options]"
     echo "Options:"
-    echo "  --domains-file      -d  File with Domains               - Default: domains.csv"
+    echo "  --domains-file      -d  File with Domains               - Default: crt_domains.csv"
     echo "  --ignore-errors     -i  Ignore errors                   - Default: false"
     echo "  --log-file          -o  Log file name                   - Default: Current date_time.log"
     echo "  --proxy-bypass      -x  Proxy ByPass                    - Default: true"

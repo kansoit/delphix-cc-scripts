@@ -4,16 +4,15 @@
     "name": "0-APELLIDO-LST",
     "description": "0-APELLIDO - LIST",
     "type": "LIST",
-    "frameworkId": 2,
     "properties": {
       "valueLists": [
         {
-          "file": "delphix-file://upload/f_f6961ac4a3784e638454b83e4bcce99b/APELLIDO.txt",
-          "matchStrength": 1.0
+          "file": "delphix-file://upload/f_351cfbe9f63440f9b8bab57a56fe0de8/APELLIDO.txt",
+          "matchStrength": 0.2
         }
-      ],
-      "rejectStrength": 0.1
-    }
+      ]
+    },
+    "frameworkId": 2
   },
   {
     "domain": "0-APELLIDO",
@@ -26,13 +25,7 @@
         {
           "matchType": "REGEX",
           "matchStrength": 0.67,
-          "fieldValue": "(?i)^(ape(llido)?)$",
-          "allowPartialMatch": false
-        },
-        {
-          "matchType": "REGEX",
-          "matchStrength": 0.67,
-          "fieldValue": "(?i)^(last[_\\-\\s]?name)$",
+          "fieldValue": "^(apellido([_\\-\\s]?(materno|paterno))?)$",
           "allowPartialMatch": false
         }
       ],
@@ -62,33 +55,14 @@
     "properties": {
       "dataPatterns": [
         {
-          "regex": "(?i)^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}$",
+          "regex": "^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,}(?:[\\s-][A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,20})*$",
           "checksumType": "NONE",
           "caseSensitive": false,
-          "matchStrength": 0.7,
+          "matchStrength": 0.9,
           "allowPartialMatch": false
         }
       ],
-      "rejectStrength": 0.1
-    }
-  },
-  {
-    "domain": "0-APELLIDO",
-    "name": "0-APELLIDO-REJ",
-    "description": "0-APELLIDO - REJECT",
-    "type": "DATA",
-    "frameworkId": 1,
-    "properties": {
-      "dataPatterns": [
-        {
-          "regex": "(?i)(apellido[_\\-\\s]?(materno|paterno)?[_\\-\\s]?(empresa|organizacion))",
-          "checksumType": "NONE",
-          "caseSensitive": false,
-          "matchStrength": 1.0,
-          "allowPartialMatch": true
-        }
-      ],
-      "rejectStrength": 1.0
+      "rejectStrength": 0.0
     }
   }
 ]
