@@ -10,7 +10,7 @@ IGN_ERROR="false"
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_create_algorithms_$logFileDate.log"
-FILEREFID_NAME="fileReferenceId.csv"
+FILEREFID_NAME=""
 PROXY_BYPASS=true
 HttpsInsecure=false
 
@@ -19,7 +19,7 @@ show_help() {
     echo "Usage: dpxcc_create_algorithms.sh [options]"
     echo "Options:"
     echo "  --algorithms-file   -a  File containing Algorithms            - Default: crt_algorithms.csv"
-    echo "  --file-reference-id -f  File Reference Id name                - Default: fileid.csv"
+    echo "  --file-reference-id -f  File Reference Id name                - Mandatory (Output CSV)"
     echo "  --ignore-errors     -i  Ignore errors while adding Algorithms - Default: false"
     echo "  --log-file          -o  Log file name                         - Default: Current date_time.log"
     echo "  --proxy-bypass      -x  Proxy ByPass                          - Default: true"
@@ -459,6 +459,7 @@ check_framework_id() {
     local algoJson="$1" # The algorithm JSON content
     local allFrameworksJson="$2" # The JSON response from get_frameworks
     local expectedFrameworkType="$3"
+    local jsonFilePath="$4" # The path to the JSON file for updates
 
     local algoName
     algoName=$(echo "$algoJson" | jq -r '.algorithmName')
@@ -479,11 +480,17 @@ check_framework_id() {
         correctPluginId=$(echo "$matchingFramework" | jq -r '.plugin.pluginId')
 
         if [ "$currentFrameworkId" != "$correctFrameworkId" ] || [ "$currentPluginId" != "$correctPluginId" ]; then
-            log "Framework ID or Plugin ID mismatch for algorithm $algoName. Correcting JSON.\n"
+            log "Framework ID or Plugin ID mismatch for algorithm $algoName. Correcting JSON.\n" >&2
             algoJson=$(echo "$algoJson" | jq --arg fid "$correctFrameworkId" --arg pid "$correctPluginId" '.frameworkId = ($fid | tonumber) | .pluginId = ($pid | tonumber)')
+            
+            # Persist changes to file
+            if [ -n "$jsonFilePath" ] && [ -f "$jsonFilePath" ]; then
+                log "Overwriting $jsonFilePath with corrected IDs.\n" >&2
+                echo "$algoJson" | jq . > "$jsonFilePath"
+            fi
         fi
     else
-        log "Warning: No matching framework found on appliance for algorithm $algoName. Cannot validate/correct frameworkId/pluginId.\n"
+        log "Warning: No matching framework found on appliance for algorithm $algoName. Cannot validate/correct frameworkId/pluginId.\n" >&2
     fi
     echo "$algoJson" | jq -c . 2>/dev/null || echo "$algoJson"
 }
@@ -527,6 +534,11 @@ done
 
 # Shift positional parameters so that getopts doesn't re-process them
 shift $((OPTIND-1))
+
+if [ -z "$FILEREFID_NAME" ]; then
+    echo "Error: The -f (fileReferenceId output file) parameter is mandatory."
+    show_help
+fi
 
 if [ ! -f "CONFIG" ]; then
     echo "CONFIG file not found!"
@@ -584,7 +596,7 @@ do
             current_algo_json=$(echo "$current_algo_json" | jq --arg newUri "$fileReferenceId" '.algorithmExtension.lookupFile.uri = $newUri')
         fi
 
-        current_algo_json=$(check_framework_id "$current_algo_json" "$GET_FRAMEWORK_VALUE" "$frameworkName")
+        current_algo_json=$(check_framework_id "$current_algo_json" "$GET_FRAMEWORK_VALUE" "$frameworkName" "$json_file_path")
 
         # Llamar a la función add_algorithm con el payload JSON final
         add_algorithm "$current_algo_json"
