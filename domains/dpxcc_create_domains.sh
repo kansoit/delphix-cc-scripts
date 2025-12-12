@@ -117,8 +117,20 @@ check_jsonf() {
     local jsonFile="$1"
     local IGNORE="$2"
 
-    if [ ! -f "$jsonFile" ] && [ "$IGNORE" != "true" ]; then
-        echo "Input json file $jsonFile is missing"
+    if [ ! -f "$jsonFile" ]; then
+        if [ "$IGNORE" != "true" ]; then
+            echo "Input json file $jsonFile is missing"
+            exit 1
+        else
+            return 0
+        fi
+    fi
+
+    if jq empty "$jsonFile" >/dev/null 2>&1; then
+        log "OK: $jsonFile\n"
+    else
+        echo "ERROR: $jsonFile"
+        echo "json file format is NOT valid!"
         exit 1
     fi
 }
