@@ -10,6 +10,7 @@ IGN_ERROR="false"
 KEEPALIVE=300
 logFileDate=$(date '+%d%m%Y_%H%M%S')
 logFileName="dpxcc_create_classifiers_$logFileDate.log"
+FILEREFID_NAME=""
 PROXY_BYPASS=true
 HttpsInsecure=false
 
@@ -18,6 +19,7 @@ show_help() {
     echo "Usage: dpxcc_create_classifiers.sh [options]"
     echo "Options:"
     echo "  --classifiers-file  -c  File containing Classifiers            - Default: crt_classifiers.csv"
+    echo "  --file-reference-id -f  File Reference Id CSV (optional)       - Default: None"
     echo "  --ignore-errors     -i  Ignore errors while adding Classifiers - Default: false"
     echo "  --log-file          -o  Log file name                          - Default: Current date_time.log"
     echo "  --proxy-bypass      -x  Proxy ByPass                           - Default: true"
@@ -118,16 +120,21 @@ check_jsonf() {
     local jsonFile="$1"
     local IGNORE="$2"
 
-    if [ ! -f "$jsonFile" ] && [ "$IGNORE" != "true" ]; then
-        echo "Input json file $jsonFile is missing"
+    if [ ! -f "$jsonFile" ]; then
+        if [ "$IGNORE" != "true" ]; then
+            echo "Input json file $jsonFile is missing"
+            exit 1
+        else
+            return 0
+        fi
+    fi
+
+    if jq empty "$jsonFile" >/dev/null 2>&1; then
+        log "OK: $jsonFile\n"
+    else
+        echo "ERROR: $jsonFile"
+        echo "json file format is NOT valid!"
         exit 1
-          if jq empty "$f" >/dev/null 2>&1; then
-             log "OK: $f"
-          else
-             echo "ERROR: $f"
-             echo "json file format is NOT valid!"
-             exit 1
-          fi
     fi
 }
 
@@ -364,7 +371,7 @@ sync_classifier_file() {
         object_type=$(echo "$current_object" | jq -r '.type')
 
         local new_framework_id
-        new_framework_id=$(echo "$FRAMEWORK_MAP_COMPACT" | jq -r "."$object_type" // null")
+        new_framework_id=$(echo "$FRAMEWORK_MAP_COMPACT" | jq -r --arg key "$object_type" '.[$key] // null')
 
         if [ "$new_framework_id" != "null" ]; then
             current_object=$(echo "$current_object" | jq --argjson new_id "$new_framework_id" '.frameworkId = $new_id')
@@ -385,6 +392,42 @@ sync_classifier_file() {
     else
         log "Framework IDs are already in sync.\n"
     fi
+}
+
+sync_file_references() {
+    local classifier_file="$1"
+    local reference_csv="$2"
+
+    if [ -z "$reference_csv" ] || [ ! -f "$reference_csv" ]; then
+        return 0
+    fi
+
+    log "Checking file references for $classifier_file against $reference_csv...\n"
+    
+    # We loop through the CSV to find if this JSON needs any of the uploaded files
+    while read -r line; do
+        # Extract full URI by removing quotes
+        local FULL_URI
+        FULL_URI=$(echo "$line" | tr -d '"')
+        
+        if [ -z "$FULL_URI" ]; then continue; fi
+
+        # Extract filename (e.g., from delphix-file://.../NOMBRE.txt -> NOMBRE.txt)
+        local FILENAME
+        FILENAME=$(basename "$FULL_URI")
+
+        # Check if the JSON file strictly refers to this filename pattern in a "file" field
+        # The pattern matches "file": ".../NOMBRE.txt"
+        if grep -q "/$FILENAME\"" "$classifier_file"; then
+             log "Updating reference for $FILENAME in $classifier_file to $FULL_URI\n"
+             
+             # Use sed to replace the outdated URI with the new valid URI from the CSV
+             # We use | as delimiter to avoid conflict with slashes in URI
+             local tmp_json
+             tmp_json=$(mktemp)
+             sed "s|\"file\": \".*/$FILENAME\"|\"file\": \"$FULL_URI\"|g" "$classifier_file" > "$tmp_json" && mv "$tmp_json" "$classifier_file"
+        fi
+    done < "$reference_csv"
 }
 
 add_classifier() {
@@ -445,6 +488,9 @@ while getopts ":hc:i:o:x:k:" PARAMETERS; do
         c)
             CLASSIFIER_FILE=${OPTARG[*]};
             ;;
+        f)
+            FILEREFID_NAME=${OPTARG[*]};
+            ;;
         i)
             IGN_ERROR=${OPTARG[*]};
             ;;
@@ -501,6 +547,7 @@ do
         then
             log "Processing file: $json_file_path\\n"
 
+            sync_file_references "$json_file_path" "$FILEREFID_NAME"
             sync_classifier_file "$json_file_path"
 
             # Leer el contenido del JSON del clasificador y procesar cada objeto
